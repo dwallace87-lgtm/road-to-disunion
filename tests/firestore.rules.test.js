@@ -1,7 +1,5 @@
 // Automated security-rule tests for firestore.rules.
-// STATUS: written, NOT yet run. Requires Node 18+, Java, and the Firebase emulator:
-//   npm install
-//   npm run test:rules
+// Run locally with Node 20 and Java 17: npm ci, then npm run test:rules.
 // The real domain is unverified, so the placeholder in firestore.rules is swapped for a test domain here.
 
 const { test, before, after, beforeEach } = require('node:test');
@@ -14,7 +12,7 @@ let env;
 
 before(async () => {
   const rules = fs.readFileSync('firestore.rules', 'utf8').replace("'UNVERIFIED-DOMAIN.invalid'", `'${DOMAIN}'`);
-  env = await initializeTestEnvironment({ projectId: 'rtd-rules-test', firestore: { rules } });
+  env = await initializeTestEnvironment({ projectId: 'demo-rtd-rules-test', firestore: { rules } });
 });
 after(async () => { await env.cleanup(); });
 
@@ -52,6 +50,25 @@ test('student cannot forge an audit entry to unlock a progress change', async ()
   b.set(a, { actor: `quinn@${DOMAIN}`, target: 'quinn', action: 'fake', at: serverTimestamp() });
   b.update(doc(db, 'progress', 'quinn'), { node: 'L2', status: 'current', lastAuditId: a.id });
   await assertFails(b.commit());
+});
+test('first sign-in creates a profile and starting position while progress is reserved for staff', async () => {
+  const email = `jamie@${DOMAIN}`;
+  await assertSucceeds(setDoc(doc(wallace(), 'roster', email), { period: 2, displayName: 'Jamie R.', active: true }));
+
+  const db = jamie(), b = writeBatch(db);
+  b.set(doc(db, 'users', 'jamie'), { email, period: 2, displayName: 'Jamie R.', avatar: null, role: 'student', createdAt: serverTimestamp() });
+  b.set(doc(db, 'positions', 'jamie'), { period: 2, displayName: 'Jamie R.', avatar: null, node: 'L1' });
+  await assertSucceeds(b.commit());
+  await assertFails(setDoc(doc(db, 'progress', 'jamie'), { period: 2, node: 'L1', status: 'current' }));
+
+  const staffDb = wallace(), progress = doc(staffDb, 'progress', 'jamie');
+  const a = doc(collection(staffDb, 'audit'));
+  const data = { period: 2, node: 'L2', status: 'current', lastAuditId: a.id };
+  await assertFails(setDoc(progress, data));
+  const update = writeBatch(staffDb);
+  update.set(a, { actor: `wallace@${DOMAIN}`, target: 'jamie', action: 'L1 verified', at: serverTimestamp() });
+  update.set(progress, data);
+  await assertSucceeds(update.commit());
 });
 
 // --- Students cannot act as other students ---
@@ -108,6 +125,15 @@ test('staff progress change fails without an audit entry and succeeds with one',
   b.update(doc(db, 'progress', 'riley'), { node: 'MC1', status: 'current', lastAuditId: a.id });
   b.update(doc(db, 'positions', 'riley'), { node: 'MC1' });
   await assertSucceeds(b.commit());
+});
+test('staff progress changes require a new audit entry for the same student', async () => {
+  const db = wallace(), progress = doc(db, 'progress', 'riley');
+  await assertFails(updateDoc(progress, { node: 'MC1', status: 'current', lastAuditId: 'old' }));
+
+  const b = writeBatch(db), a = doc(collection(db, 'audit'));
+  b.set(a, { actor: `wallace@${DOMAIN}`, target: 'quinn', action: 'Mastery verified', at: serverTimestamp() });
+  b.update(progress, { node: 'MC1', status: 'current', lastAuditId: a.id });
+  await assertFails(b.commit());
 });
 test('audit history cannot be edited or deleted, even by staff', async () => {
   await assertFails(updateDoc(doc(wallace(), 'audit', 'old'), { action: 'changed' }));

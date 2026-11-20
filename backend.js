@@ -270,6 +270,7 @@ async function firebaseBackend(config) {
   const F = await import(`https://www.gstatic.com/firebasejs/${FB}/firebase-firestore.js`);
   const app = initializeApp(config), auth = A.getAuth(app), db = F.getFirestore(app);
   const d = (...p) => F.doc(db, ...p);
+  const startingProgress = { node: 'L1', status: 'current' };
   let me = null; // { email, name }
 
   async function resolve(user) {
@@ -286,8 +287,7 @@ async function firebaseBackend(config) {
       if (!u.exists()) {
         const b = F.writeBatch(db);
         b.set(d('users', user.uid), { email, period: r.period, displayName: r.displayName, avatar: null, role: 'student', createdAt: F.serverTimestamp() });
-        b.set(d('positions', user.uid), { period: r.period, displayName: r.displayName, avatar: null, node: 'L1' });
-        b.set(d('progress', user.uid), { period: r.period, node: 'L1', status: 'current' });
+        b.set(d('positions', user.uid), { period: r.period, displayName: r.displayName, avatar: null, node: startingProgress.node });
         await b.commit(); u = await F.getDoc(d('users', user.uid));
       }
       return { status: 'student', uid: user.uid, email, name: r.displayName, period: r.period, avatar: u.data().avatar };
@@ -300,11 +300,15 @@ async function firebaseBackend(config) {
   const uidByEmail = async (email) => { const s = await F.getDocs(F.query(F.collection(db, 'users'), F.where('email', '==', email))); return s.empty ? null : s.docs[0].id; };
   const newAudit = (b, f) => { const ref = F.doc(F.collection(db, 'audit')); b.set(ref, { actor: me.email, actorName: me.name, target: null, at: F.serverTimestamp(), ...f }); return ref.id; };
   async function setProgressB(b, a) {
-    const p = await F.getDoc(d('progress', a.uid)); if (!p.exists()) throw new Error('This student has not signed in yet.');
-    const u = (await F.getDoc(d('users', a.uid))).data();
-    const id = newAudit(b, { action: a.action || 'Progress updated', target: a.uid, email: u.email, targetName: u.displayName, before: { node: p.data().node, status: p.data().status }, after: { node: a.node, status: a.status }, reason: a.reason || '', revertOf: a.revertOf || null });
-    b.update(d('progress', a.uid), { node: a.node, status: a.status, lastAuditId: id });
-    b.update(d('positions', a.uid), { node: a.node });
+    const ref = d('progress', a.uid);
+    const p = await b.get(ref);
+    const u = (await b.get(d('users', a.uid))).data();
+    if (!u) throw new Error('This student has not signed in yet.');
+    const previous = p.data() ?? startingProgress;
+    const next = { node: a.node ?? previous.node, status: a.status };
+    const id = newAudit(b, { action: a.action || 'Progress updated', target: a.uid, email: u.email, targetName: u.displayName, before: { node: previous.node, status: previous.status }, after: next, reason: a.reason || '', revertOf: a.revertOf || null });
+    b.set(ref, { ...next, period: p.exists() ? previous.period : u.period, lastAuditId: id }, { merge: true });
+    b.update(d('positions', a.uid), { node: next.node });
   }
   const OPS = {
     async approveEnrollment(b, a) {
@@ -328,20 +332,24 @@ async function firebaseBackend(config) {
       b.update(d('roster', a.email), { active: !!a.active });
       if (uid) {
         if (!a.active) b.delete(d('positions', uid));
-        else { const u = (await F.getDoc(d('users', uid))).data(), p = (await F.getDoc(d('progress', uid))).data(); b.set(d('positions', uid), { period: r.period, displayName: r.displayName, avatar: u.avatar, node: p.node }); }
+        else { const u = (await F.getDoc(d('users', uid))).data(), p = (await F.getDoc(d('progress', uid))).data() ?? startingProgress; b.set(d('positions', uid), { period: r.period, displayName: r.displayName, avatar: u.avatar, node: p.node }); }
       }
       newAudit(b, { action: a.active ? 'Access granted' : 'Access revoked', email: a.email, target: uid, targetName: r.displayName, change: a.active ? 'Can sign in again' : 'Sign-in blocked; hidden from the board' });
     },
     async changePeriod(b, a) {
-      const r = (await F.getDoc(d('roster', a.email))).data(), uid = await uidByEmail(a.email);
+      const r = (await b.get(d('roster', a.email))).data(), uid = await uidByEmail(a.email);
+      const p = uid ? await b.get(d('progress', uid)) : null;
       b.update(d('roster', a.email), { period: a.period });
       const id = newAudit(b, { action: 'Period changed', email: a.email, target: uid, targetName: r.displayName, change: `Period ${r.period} → ${a.period}`, periodBefore: r.period, periodAfter: a.period, revertOf: a.revertOf || null });
-      if (uid) { b.update(d('users', uid), { period: a.period }); b.update(d('positions', uid), { period: a.period }); b.update(d('progress', uid), { period: a.period, lastAuditId: id }); }
+      if (uid) {
+        b.update(d('users', uid), { period: a.period });
+        b.update(d('positions', uid), { period: a.period });
+        if (p.exists()) b.update(p.ref, { period: a.period, lastAuditId: id });
+      }
     },
     async setProgress(b, a) { await setProgressB(b, a); },
     async requestPractice(b, a) {
-      const p = (await F.getDoc(d('progress', a.uid))).data();
-      await setProgressB(b, { uid: a.uid, node: p.node, status: 'needs', action: 'Practice requested', reason: 'Next-step instructions sent privately' });
+      await setProgressB(b, { uid: a.uid, status: 'needs', action: 'Practice requested', reason: 'Next-step instructions sent privately' });
       b.set(F.doc(F.collection(db, 'progress', a.uid, 'feedback')), { kind: 'practice', text: a.text.trim(), author: me.email, authorName: me.name, at: F.serverTimestamp() });
     },
     async sendFeedback(b, a) {
@@ -349,7 +357,7 @@ async function firebaseBackend(config) {
       newAudit(b, { action: 'Private feedback sent', target: a.uid, change: 'Message visible only to the student' });
     },
     async revertAudit(b, a) {
-      const e = (await F.getDoc(d('audit', a.id))).data(); if (!e) throw new Error('Entry not found.');
+      const e = (await b.get(d('audit', a.id))).data(); if (!e) throw new Error('Entry not found.');
       const dup = await F.getDocs(F.query(F.collection(db, 'audit'), F.where('revertOf', '==', a.id))); if (!dup.empty) throw new Error('This change was already undone.');
       if (e.before) return setProgressB(b, { uid: e.target, node: e.before.node, status: e.before.status, action: 'Correction — undo', reason: a.reason || '', revertOf: a.id });
       if (e.periodBefore) return OPS.changePeriod(b, { email: e.email, period: e.periodBefore, revertOf: a.id });
@@ -365,11 +373,19 @@ async function firebaseBackend(config) {
     signOut: () => A.signOut(auth),
     async setAvatar(uid, avatar) { const b = F.writeBatch(db); b.update(d('users', uid), { avatar }); b.update(d('positions', uid), { avatar }); await b.commit(); },
     listenClass: (period, cb) => F.onSnapshot(F.query(F.collection(db, 'positions'), F.where('period', '==', period)), (s) => cb(s.docs.map((x) => ({ id: x.id, ...x.data() }))), () => cb([])),
-    listenMyProgress: (uid, cb) => F.onSnapshot(d('progress', uid), (x) => cb(x.exists() ? x.data() : null), () => cb(null)),
+    listenMyProgress: (uid, cb) => F.onSnapshot(d('progress', uid), (x) => cb(x.data() ?? startingProgress), () => cb(null)),
     listenFeedback: (uid, cb) => F.onSnapshot(F.query(F.collection(db, 'progress', uid, 'feedback'), F.orderBy('at', 'desc')), (s) => cb(s.docs.map((x) => ({ id: x.id, ...x.data(), author: x.data().authorName || x.data().author, at: ts(x.data().at) }))), () => cb([])),
     listenStaff(cb) {
-      const snap = { roster: [], enroll: [], users: {}, positions: {}, progress: {}, feedback: {}, audit: [] }, unsubs = [];
-      const emit = () => cb({ ...snap, roster: snap.roster.map((r) => ({ ...r, uid: (Object.entries(snap.users).find(([, u]) => u.email === r.email) || [])[0] || null })) });
+      const snap = { roster: [], enroll: [], users: {}, positions: {}, progress: null, feedback: {}, audit: [] }, unsubs = [];
+      const emit = () => {
+        const progress = { ...snap.progress };
+        if (snap.progress) {
+          for (const [uid, user] of Object.entries(snap.users)) {
+            progress[uid] ??= { ...startingProgress, period: user.period };
+          }
+        }
+        cb({ ...snap, progress, roster: snap.roster.map((r) => ({ ...r, uid: (Object.entries(snap.users).find(([, u]) => u.email === r.email) || [])[0] || null })) });
+      };
       const byId = (s) => Object.fromEntries(s.docs.map((x) => [x.id, x.data()]));
       unsubs.push(F.onSnapshot(F.collection(db, 'roster'), (s) => { snap.roster = s.docs.map((x) => ({ email: x.id, ...x.data() })); emit(); }, () => cb(null)));
       unsubs.push(F.onSnapshot(F.collection(db, 'enrollRequests'), (s) => { snap.enroll = s.docs.map((x) => ({ ...x.data(), at: ts(x.data().createdAt) })); emit(); }));
@@ -381,7 +397,11 @@ async function firebaseBackend(config) {
     },
     async run(op, a) {
       if (!STAFF_OPS.includes(op)) throw new Error('Unknown operation');
-      check(op, a); const b = F.writeBatch(db); await OPS[op](b, a); await b.commit();
+      check(op, a);
+      if (['setProgress', 'requestPractice', 'changePeriod', 'revertAudit'].includes(op)) {
+        return F.runTransaction(db, (transaction) => OPS[op](transaction, a));
+      }
+      const b = F.writeBatch(db); await OPS[op](b, a); await b.commit();
     }
   };
 }

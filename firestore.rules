@@ -1,7 +1,7 @@
 rules_version = '2';
 // Road to Disunion — Firestore security rules (the real permission system).
 // Every check here runs on Google's servers; hiding buttons in the app is NOT what keeps data safe.
-// Status: written, NOT yet deployed, NOT yet run against the emulator test suite (tests/firestore.rules.test.js).
+// Tested with the Firestore emulator. Deployment requires the school's Firebase project.
 //
 // Collections
 //   staff/{email}               teacher/co-teacher allowlist — admin-managed in the Firebase console ONLY
@@ -24,7 +24,7 @@ service cloud.firestore {
     function signedIn()      { return request.auth != null && request.auth.token.email_verified == true; }
     function email()         { return request.auth.token.email.lower(); }
     function schoolEmail()   { return signedIn() && email().split('@')[1] in schoolDomains(); }
-    function path(p)         { return /databases/$(database)/documents/$(p); }
+    function isOwner(uid)    { return schoolEmail() && request.auth.uid == uid; }
     function isStaff()       { return schoolEmail() && exists(/databases/$(database)/documents/staff/$(email())); }
     function onRoster()      { return exists(/databases/$(database)/documents/roster/$(email())); }
     function rosterEntry()   { return get(/databases/$(database)/documents/roster/$(email())).data; }
@@ -41,12 +41,13 @@ service cloud.firestore {
     // A staff progress write must reference a NEW audit entry, written in the same batch, about this
     // student, by this staff member. This guarantees every progress change is in the history.
     function audited(uid) {
-      let id = newData().lastAuditId;
+      let id = newData().get('lastAuditId', null);
       return id is string
         && (resource == null || id != resource.data.get('lastAuditId', ''))
-        && existsAfter(path('audit/' + id))
-        && getAfter(path('audit/' + id)).data.target == uid
-        && getAfter(path('audit/' + id)).data.actor == email();
+        && !exists(/databases/$(database)/documents/audit/$(id))
+        && existsAfter(/databases/$(database)/documents/audit/$(id))
+        && getAfter(/databases/$(database)/documents/audit/$(id)).data.target == uid
+        && getAfter(/databases/$(database)/documents/audit/$(id)).data.actor == email();
     }
 
     match /staff/{e} {
@@ -59,7 +60,7 @@ service cloud.firestore {
       allow create, update: if isStaff()
         && newData().keys().hasOnly(['period','displayName','active'])
         && validPeriod(newData().period) && validName(newData().displayName) && newData().active is bool
-        && !exists(path('staff/' + e));
+        && !exists(/databases/$(database)/documents/staff/$(e));
       allow delete: if isStaff();
     }
 
@@ -75,7 +76,7 @@ service cloud.firestore {
     }
 
     match /users/{uid} {
-      allow read: if request.auth.uid == uid || isStaff();
+      allow read: if isOwner(uid) || isStaff();
       allow create: if request.auth.uid == uid && isStudent()
         && newData().keys().hasOnly(['email','period','displayName','avatar','role','createdAt'])
         && newData().email == email() && newData().period == myPeriod()
@@ -99,18 +100,13 @@ service cloud.firestore {
     }
 
     match /progress/{uid} {
-      allow read: if request.auth.uid == uid || isStaff();
-      // Students may only create their own starting record (L1, current) and can NEVER edit it.
-      allow create: if (request.auth.uid == uid && isStudent()
-                        && newData().keys().hasOnly(['period','node','status'])
-                        && newData().period == myPeriod() && newData().node == 'L1' && newData().status == 'current')
-                    || (isStaff() && validNode(newData().node) && validStatus(newData().status) && audited(uid));
-      allow update: if isStaff() && validNode(newData().node) && validStatus(newData().status)
-                    && validPeriod(newData().period) && audited(uid);
+      allow read: if isOwner(uid) || isStaff();
+      allow create, update: if isStaff() && validNode(newData().node) && validStatus(newData().status)
+                            && validPeriod(newData().period) && audited(uid);
       allow delete: if false;
 
       match /feedback/{fid} {
-        allow read: if request.auth.uid == uid || isStaff();
+        allow read: if isOwner(uid) || isStaff();
         allow create: if isStaff() && newData().author == email() && newData().at == request.time
           && newData().kind in ['note','practice'] && newData().text is string && newData().text.size() <= 2000;
         allow update, delete: if false;
