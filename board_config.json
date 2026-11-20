@@ -1,0 +1,808 @@
+{
+  "_about": "Single source of truth for the Road to Disunion board. Lesson text copied verbatim from unit_content_LOCKED.json. Positions are 1600x900 stage coordinates (centre of node). Students are FICTIONAL demo data only.",
+  "unit_title": "The Road to Disunion",
+  "unit_subtitle": "The Causes of the Civil War, 1820–1861",
+  "course": "11th-Grade U.S. History",
+  "essential_question": "How did disagreements over slavery contribute to the outbreak of the Civil War?",
+  "class_periods": [
+    1,
+    2,
+    5,
+    7
+  ],
+  "route": [
+    "START",
+    "L1",
+    "L2",
+    "MC1",
+    "L3",
+    "MC2",
+    "BRIDGE",
+    "L4",
+    "L5",
+    "MC3",
+    "L6",
+    "L7",
+    "FINISH"
+  ],
+  "pacing_checkpoint": "After MC2, on-pace students should demonstrate mastery of economic evidence interpretation and historical causation; reteach and reassess as needed.",
+  "statuses": {
+    "current": "Current lesson",
+    "practice": "Practice underway",
+    "ready": "Ready for mastery check",
+    "submitted": "Check submitted — awaiting feedback",
+    "mastered": "Mastered",
+    "needs": "Needs targeted practice / reassessment",
+    "complete": "Unit complete"
+  },
+  "assets": {
+    "bg": {
+      "world": "assets/bg_world.png",
+      "week1": "assets/bg_week1.png",
+      "week2": "assets/bg_week2.png"
+    },
+    "platform": {
+      "week1": {
+        "normal": "assets/plat_1.png",
+        "selected": "assets/plat_2.png",
+        "completed": "assets/plat_3.png"
+      },
+      "week2": {
+        "normal": "assets/plat_4.png",
+        "selected": "assets/plat_5.png",
+        "completed": "assets/plat_6.png"
+      }
+    },
+    "gate": {
+      "MC1": {
+        "closed": "assets/gate_3.png",
+        "open": "assets/gate_4.png"
+      },
+      "MC2": {
+        "closed": "assets/gate_1.png",
+        "open": "assets/gate_2.png"
+      },
+      "MC3": {
+        "closed": "assets/gate_5.png",
+        "open": "assets/gate_6.png"
+      }
+    },
+    "finish": {
+      "closed": "assets/fx_1.png",
+      "open": "assets/fx_2.png"
+    },
+    "fx": {
+      "halo": "assets/fx_11.png",
+      "sparkle_gold": "assets/fx_9.png",
+      "leaves": "assets/fx_10.png",
+      "sparkle_blue": "assets/fx_12.png"
+    },
+    "icons": {
+      "people": "assets/icon_12.png",
+      "compass": "assets/icon_2.png",
+      "check": "assets/icon_3.png",
+      "star": "assets/icon_11.png",
+      "hourglass": "assets/icon_8.png",
+      "revise": "assets/icon_7.png",
+      "lock": "assets/gate_11.png",
+      "book": "assets/fx_5.png",
+      "scroll": "assets/fx_6.png",
+      "lantern": "assets/fx_8.png",
+      "signpost": "assets/gate_10.png",
+      "sign": "assets/terrain_12.png"
+    }
+  },
+  "world": {
+    "regions": [
+      {
+        "id": "week1",
+        "x": 375,
+        "y": 470,
+        "w": 700,
+        "h": 600,
+        "label_x": 360,
+        "label_y": 835
+      },
+      {
+        "id": "week2",
+        "x": 1235,
+        "y": 450,
+        "w": 720,
+        "h": 600,
+        "label_x": 1240,
+        "label_y": 835
+      }
+    ],
+    "ambient": {
+      "smoke": [
+        [
+          493,
+          198
+        ],
+        [
+          531,
+          198
+        ]
+      ],
+      "glint": [
+        [
+          70,
+          700
+        ],
+        [
+          250,
+          880
+        ],
+        [
+          640,
+          862
+        ],
+        [
+          790,
+          640
+        ],
+        [
+          800,
+          340
+        ],
+        [
+          905,
+          872
+        ],
+        [
+          1300,
+          880
+        ],
+        [
+          1600,
+          625
+        ],
+        [
+          1585,
+          800
+        ],
+        [
+          790,
+          470
+        ]
+      ],
+      "ripple": [
+        [
+          67,
+          805
+        ],
+        [
+          565,
+          792
+        ],
+        [
+          990,
+          832
+        ],
+        [
+          1522,
+          692
+        ]
+      ],
+      "wave": [
+        [
+          300,
+          862
+        ],
+        [
+          700,
+          705
+        ],
+        [
+          1110,
+          822
+        ],
+        [
+          1390,
+          805
+        ]
+      ],
+      "glow": [],
+      "leaf": [
+        [
+          1050,
+          190,
+          "orange"
+        ],
+        [
+          1430,
+          180,
+          "yellow"
+        ],
+        [
+          1300,
+          640,
+          "orange"
+        ]
+      ]
+    }
+  },
+  "regions": [
+    {
+      "id": "week1",
+      "week": 1,
+      "title": "The Growing Divide",
+      "window": "Self-Paced Window 1",
+      "nodes": [
+        "L1",
+        "L2",
+        "MC1",
+        "L3",
+        "MC2"
+      ],
+      "positions": {
+        "START": {
+          "x": 52,
+          "y": 505
+        },
+        "L1": {
+          "x": 306,
+          "y": 452
+        },
+        "L2": {
+          "x": 809,
+          "y": 466
+        },
+        "MC1": {
+          "x": 1052,
+          "y": 448
+        },
+        "L3": {
+          "x": 1306,
+          "y": 452
+        },
+        "MC2": {
+          "x": 1535,
+          "y": 452
+        },
+        "EXIT": {
+          "x": 1540,
+          "y": 250
+        }
+      },
+      "decor": [
+        {
+          "src": "assets/fx_10.png",
+          "x": 150,
+          "y": 640,
+          "w": 90,
+          "anim": "leaf"
+        },
+        {
+          "src": "assets/fx_10.png",
+          "x": 1180,
+          "y": 220,
+          "w": 80,
+          "anim": "leaf2"
+        }
+      ],
+      "ambient": {
+        "smoke": [
+          [
+            287,
+            92
+          ]
+        ],
+        "glint": [
+          [
+            760,
+            160
+          ],
+          [
+            738,
+            210
+          ],
+          [
+            700,
+            295
+          ],
+          [
+            660,
+            385
+          ],
+          [
+            620,
+            428
+          ],
+          [
+            18,
+            205
+          ],
+          [
+            38,
+            145
+          ],
+          [
+            200,
+            885
+          ],
+          [
+            560,
+            892
+          ],
+          [
+            980,
+            892
+          ],
+          [
+            1450,
+            882
+          ],
+          [
+            1575,
+            600
+          ]
+        ],
+        "ripple": [
+          [
+            81,
+            805
+          ],
+          [
+            469,
+            812
+          ],
+          [
+            856,
+            853
+          ],
+          [
+            1254,
+            850
+          ],
+          [
+            150,
+            868
+          ]
+        ],
+        "wave": [
+          [
+            330,
+            822
+          ],
+          [
+            760,
+            842
+          ],
+          [
+            1140,
+            862
+          ],
+          [
+            1500,
+            802
+          ]
+        ],
+        "glow": [
+          [
+            196,
+            222,
+            14
+          ],
+          [
+            230,
+            222,
+            14
+          ],
+          [
+            262,
+            222,
+            14
+          ],
+          [
+            1053,
+            586,
+            12
+          ]
+        ],
+        "leaf": [
+          [
+            105,
+            560,
+            "orange"
+          ],
+          [
+            182,
+            580,
+            "yellow"
+          ],
+          [
+            560,
+            300,
+            "green"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "week2",
+      "week": 2,
+      "title": "From Conflict to Secession",
+      "window": "Self-Paced Window 2",
+      "nodes": [
+        "L4",
+        "L5",
+        "MC3",
+        "L6",
+        "L7",
+        "FINISH"
+      ],
+      "positions": {
+        "ENTRY": {
+          "x": 46,
+          "y": 520
+        },
+        "L4": {
+          "x": 287,
+          "y": 522
+        },
+        "L5": {
+          "x": 603,
+          "y": 522
+        },
+        "MC3": {
+          "x": 823,
+          "y": 508
+        },
+        "L6": {
+          "x": 1005,
+          "y": 522
+        },
+        "L7": {
+          "x": 1340,
+          "y": 522
+        },
+        "FINISH": {
+          "x": 1500,
+          "y": 205
+        }
+      },
+      "decor": [
+        {
+          "src": "assets/w2_5.png",
+          "x": 560,
+          "y": 712,
+          "w": 70
+        },
+        {
+          "src": "assets/gate_9.png",
+          "x": 1240,
+          "y": 715,
+          "w": 96
+        },
+        {
+          "src": "assets/fx_10.png",
+          "x": 1150,
+          "y": 250,
+          "w": 80,
+          "anim": "leaf"
+        },
+        {
+          "src": "assets/fx_10.png",
+          "x": 420,
+          "y": 300,
+          "w": 70,
+          "anim": "leaf2"
+        }
+      ],
+      "ambient": {
+        "smoke": [
+          [
+            142,
+            272
+          ],
+          [
+            1287,
+            287
+          ]
+        ],
+        "glint": [
+          [
+            60,
+            882
+          ],
+          [
+            400,
+            892
+          ],
+          [
+            820,
+            885
+          ],
+          [
+            1150,
+            885
+          ],
+          [
+            1600,
+            842
+          ],
+          [
+            1625,
+            560
+          ]
+        ],
+        "ripple": [
+          [
+            77,
+            812
+          ],
+          [
+            565,
+            840
+          ],
+          [
+            1474,
+            802
+          ]
+        ],
+        "wave": [
+          [
+            300,
+            832
+          ],
+          [
+            800,
+            862
+          ],
+          [
+            1250,
+            852
+          ]
+        ],
+        "glow": [
+          [
+            685,
+            349,
+            20
+          ],
+          [
+            880,
+            345,
+            14
+          ],
+          [
+            1005,
+            345,
+            14
+          ],
+          [
+            1236,
+            370,
+            16
+          ]
+        ],
+        "leaf": [
+          [
+            1168,
+            180,
+            "orange"
+          ],
+          [
+            1388,
+            110,
+            "orange"
+          ],
+          [
+            833,
+            650,
+            "yellow"
+          ],
+          [
+            1460,
+            160,
+            "yellow"
+          ],
+          [
+            300,
+            200,
+            "green"
+          ]
+        ]
+      }
+    }
+  ],
+  "short_labels": {
+    "L1": "Sectionalism",
+    "L2": "Cotton & Economy",
+    "L3": "Western Crisis",
+    "L4": "Abolition Debate",
+    "L5": "1860 & Secession",
+    "L6": "Final Assessment",
+    "L7": "Revision",
+    "MC1": "Mastery Check 1",
+    "MC2": "Mastery Check 2",
+    "MC3": "Mastery Check 3",
+    "FINISH": "Unit Complete"
+  },
+  "lessons": [
+    {
+      "id": "L1",
+      "day": 1,
+      "week": 1,
+      "title": "A Nation Divided: Understanding Sectionalism",
+      "skill": "Historical context and chronology",
+      "learning_target": "I can explain how westward expansion and slavery intensified sectional tensions.",
+      "must_do": "Watch an introductory 5-minute video; revisit the Missouri Compromise and Manifest Destiny; complete a sectionalism timeline and map.",
+      "should_do": "Analyze Document M, Lincoln’s House Divided speech.",
+      "aspire_to_do": "Predict which sectional disagreement would prove most difficult to resolve, with evidence.",
+      "assessment": "Formative check: one claim supported by a historical fact.",
+      "mastery_gate": null
+    },
+    {
+      "id": "L2",
+      "day": 2,
+      "week": 1,
+      "title": "Slavery, Cotton, and the American Economy",
+      "skill": "Interpreting maps, charts, and economic evidence",
+      "learning_target": "I can explain how slavery shaped economic differences and interests between regions.",
+      "must_do": "Watch a short video; analyze Document A (railroads, cotton, and enslaved population) and Document B (Union/Confederate resources).",
+      "should_do": "Examine Document D, James Hammond’s Cotton Is King argument.",
+      "aspire_to_do": "Evaluate whether cotton production gave the South an economic advantage or vulnerability.",
+      "assessment": "Mastery Check 1 follows this lesson.",
+      "mastery_gate": "MC1"
+    },
+    {
+      "id": "L3",
+      "day": 3,
+      "week": 1,
+      "title": "Western Expansion and Political Crisis",
+      "skill": "Historical causation and relationships",
+      "learning_target": "I can explain how political decisions about slavery’s expansion increased sectional tensions.",
+      "must_do": "Watch a short video; analyze Document J (Kansas–Nebraska Act map) and Document L (Dred Scott decision).",
+      "should_do": "Interpret Document K, political cartoon about the caning of Charles Sumner.",
+      "aspire_to_do": "Argue which political decision most intensified the conflict over slavery.",
+      "assessment": "Mastery Check 2 follows this lesson.",
+      "mastery_gate": "MC2"
+    },
+    {
+      "id": "L4",
+      "day": 4,
+      "week": 2,
+      "title": "Abolitionists and Defenders of Slavery",
+      "skill": "Sourcing, perspective, and author’s purpose",
+      "learning_target": "I can identify an author’s argument and explain how historical context and perspective shaped it.",
+      "must_do": "Compare Document G (Frederick Douglass) and Document H (George Fitzhugh’s proslavery writing), with contextual notes and guided sourcing questions.",
+      "should_do": "Examine Document I, reactions to John Brown’s raid.",
+      "aspire_to_do": "Explain how the authors’ intended audiences influenced their arguments.",
+      "assessment": "Formative source comparison and reliability practice.",
+      "teaching_note": "Analyze slavery accurately; proslavery arguments are historical propaganda, not morally equivalent interpretations.",
+      "mastery_gate": null
+    },
+    {
+      "id": "L5",
+      "day": 5,
+      "week": 2,
+      "title": "The Election of 1860 and Secession",
+      "skill": "Historical context and source reliability",
+      "learning_target": "I can use historical evidence to explain secession and assess how an author’s perspective affects a source’s reliability for a particular purpose.",
+      "must_do": "Analyze Document N (Election of 1860 map) and a short original excerpt from Mississippi’s 1861 Declaration of Secession.",
+      "must_do_source_url": "https://www.mshistorynow.mdah.ms.gov/issue/a-declaration-of-the-immediate-causes-which-induce-and-justify-the-secession-of-the-state-of-mississippi-from-the-federal-union",
+      "should_do": "Compare Document E (Calhoun’s compact theory) and Document F (Lincoln on the Union).",
+      "aspire_to_do": "Explain the relationship between states’ rights arguments and the protection of slavery.",
+      "assessment": "Mastery Check 3 follows this lesson.",
+      "mastery_gate": "MC3"
+    },
+    {
+      "id": "L6",
+      "day": 6,
+      "week": 2,
+      "title": "Final Assessment: What Caused the Civil War?",
+      "skill": "Synthesis, evidence-based claims, and historical reasoning",
+      "learning_target": "I can explain the contribution of disagreements over slavery to the outbreak of the Civil War using evidence from at least two sources.",
+      "must_do": "Individually answer four stimulus-based multiple-choice questions and write one short argument using at least two documents. Offer R/A – C/E #1 – C/E #2 scaffold if needed.",
+      "should_do": null,
+      "aspire_to_do": null,
+      "assessment": "Final assessment: one developed paragraph, NOT a full DBQ essay.",
+      "writing_prompt": "Explain how disagreements over slavery contributed to the outbreak of the Civil War. Use evidence from at least two historical sources.",
+      "mastery_gate": "FINAL_ASSESSMENT"
+    },
+    {
+      "id": "L7",
+      "day": 7,
+      "week": 2,
+      "title": "Feedback, Revision, and Reassessment",
+      "skill": "Strengthening historical reasoning and addressing misconceptions",
+      "learning_target": "I can strengthen historical reasoning using feedback and demonstrate improvement on an unmet skill.",
+      "must_do": "Review available feedback; complete targeted correction, short teacher conference, or reassessment on any unmet skill.",
+      "should_do": "Revise the final argument using stronger evidence and explanation.",
+      "aspire_to_do": "Distinguish long-term causes from immediate triggers, or preview emancipation during the war.",
+      "assessment": "Individualized learning pathways: targeted revision and reassessment.",
+      "mastery_gate": null
+    }
+  ],
+  "mastery_checks": [
+    {
+      "id": "MC1",
+      "after": "L2",
+      "title": "Economic Evidence Interpretation",
+      "format": "Two stimulus-based multiple-choice questions plus a 1–2 sentence explanation",
+      "private_result": true
+    },
+    {
+      "id": "MC2",
+      "after": "L3",
+      "title": "Two-Source Historical Causation",
+      "format": "Brief two-source cause-and-effect response",
+      "private_result": true
+    },
+    {
+      "id": "MC3",
+      "after": "L5",
+      "title": "Sourcing and Reliability",
+      "format": "Short sourcing-and-reliability response using a new excerpt",
+      "private_result": true
+    }
+  ],
+  "students": [
+    {
+      "id": "demo01",
+      "name": "Quinn D.",
+      "period": 2,
+      "avatar": "assets/avA_1.png",
+      "source_avatar": "avatars_A/10_avatar_A_01.png",
+      "current_node": "L1"
+    },
+    {
+      "id": "demo02",
+      "name": "Riley F.",
+      "period": 2,
+      "avatar": "assets/avA_4.png",
+      "source_avatar": "avatars_A/10_avatar_A_04.png",
+      "current_node": "L2"
+    },
+    {
+      "id": "demo03",
+      "name": "Morgan S.",
+      "period": 2,
+      "avatar": "assets/avB_3.png",
+      "source_avatar": "avatars_B/11_03_avatar_B.png",
+      "current_node": "L2"
+    },
+    {
+      "id": "demo04",
+      "name": "Casey T.",
+      "period": 2,
+      "avatar": "assets/avB_8.png",
+      "source_avatar": "avatars_B/11_08_avatar_B.png",
+      "current_node": "L3"
+    },
+    {
+      "id": "demo05",
+      "name": "Avery M.",
+      "period": 1,
+      "avatar": "assets/avA_7.png",
+      "source_avatar": "avatars_A/10_avatar_A_07.png",
+      "current_node": "L4"
+    },
+    {
+      "id": "demo06",
+      "name": "Taylor P.",
+      "period": 5,
+      "avatar": "assets/avA_10.png",
+      "source_avatar": "avatars_A/10_avatar_A_10.png",
+      "current_node": "L5"
+    },
+    {
+      "id": "demo07",
+      "name": "Jordan C.",
+      "period": 7,
+      "avatar": "assets/avB_10.png",
+      "source_avatar": "avatars_B/11_10_avatar_B.png",
+      "current_node": "L6"
+    }
+  ],
+  "crowd_test_avatars": [
+    "assets/avA_2.png",
+    "assets/avA_5.png",
+    "assets/avA_8.png",
+    "assets/avB_1.png",
+    "assets/avB_5.png",
+    "assets/avB_11.png"
+  ]
+}

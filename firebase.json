@@ -1,0 +1,8 @@
+{
+  "firestore": { "rules": "firestore.rules" },
+  "hosting": {
+    "public": ".",
+    "ignore": ["firebase.json", "firestore.rules", "**/.*", "uploads/**", "scratch/**", "*.md"],
+    "headers": [{ "source": "**", "headers": [{ "key": "Content-Security-Policy", "value": "frame-ancestors 'self' https://sites.google.com https://*.googleusercontent.com" }] }]
+  }
+}

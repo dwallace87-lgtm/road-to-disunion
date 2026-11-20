@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/organic-a62b320e-d546-418e-a97f-94d2ea7b0029/styles.css">
+  <script src="_ds/organic-a62b320e-d546-418e-a97f-94d2ea7b0029/_ds_bundle.js"></script>
+  <style>
+    html, body { margin: 0; background: var(--color-bg); }
+    a { color: var(--color-accent-700); } a:hover { color: var(--color-accent-800); }
+    .mc button:focus-visible, .mc select:focus-visible, .mc input:focus-visible, .mc textarea:focus-visible, .mc a:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+  </style>
+</helmet>
+<div class="mc" style="min-height: 100vh; font-family: var(--font-body); color: var(--color-text); background: var(--color-bg);">
+
+  <!-- ===== SIGN-IN GATE ===== -->
+  <sc-if value="{{ gateOpen }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; background: var(--color-text);">
+      <div role="dialog" aria-labelledby="gate-title" style="width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 16px; padding: 28px 32px; box-sizing: border-box; background: var(--color-bg); border: 5px solid var(--color-text); border-radius: var(--radius-lg); box-shadow: inset 0 0 0 4px var(--color-accent-400);">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <img src="assets/gate_3.png" alt="" style="width: 92px; height: auto;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--color-accent-700);">{{ gate.kicker }}</span>
+            <h1 id="gate-title" style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 32px; line-height: 1.1;">{{ gate.title }}</h1>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 17px; line-height: 1.5; text-wrap: pretty;">{{ gate.body }}</p>
+        <sc-if value="{{ gate.showGoogle }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+            <button class="btn btn-primary" onClick="{{ doSignIn }}" disabled="{{ gate.googleDisabled }}" style="min-height: 50px; font-size: 17px;">Sign in with school Google account</button>
+            <span style="font-size: 14px; color: var(--color-neutral-700);">{{ gate.googleNote }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ gate.showSignOut }}" hint-placeholder-val="{{ false }}">
+          <button class="btn btn-secondary" onClick="{{ doSignOut }}" style="align-self: flex-start; min-height: 46px;">Use a different account</button>
+        </sc-if>
+        <sc-if value="{{ gate.showDemo }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: var(--radius-md); background: var(--color-neutral-100); border: 3px dashed var(--color-accent-500);">
+            <div style="font-family: var(--font-heading); font-size: 20px;">Demo accounts <span style="font-family: var(--font-body); font-size: 14px; font-weight: 700; color: var(--color-accent-800);">fictional · simulated sign-in</span></div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+              <sc-for list="{{ demoAccounts }}" as="da" hint-placeholder-count="6">
+                <button onClick="{{ da.onClick }}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 1px; min-height: 52px; padding: 6px 14px; border-radius: var(--radius-md); border: 2px solid {{ da.border }}; background: var(--color-bg); cursor: pointer; font-family: var(--font-body); color: var(--color-text); text-align: left;" style-hover="background: var(--color-accent-100);">
+                  <span style="font-weight: 700; font-size: 15px;">{{ da.name }}</span>
+                  <span style="font-size: 13px; font-weight: 600; color: var(--color-neutral-700);">{{ da.meta }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ===== MISSION CONTROL ===== -->
+  <sc-if value="{{ isStaff }}" hint-placeholder-val="{{ false }}">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 24px; background: var(--color-text); color: var(--color-neutral-100);">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <img src="assets/gate_3.png" alt="" style="width: 58px; height: auto;">
+        <div style="display: flex; flex-direction: column;">
+          <h1 style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 28px; line-height: 1.05;">Mission Control</h1>
+          <span style="font-size: 14px; font-weight: 600; color: var(--color-neutral-300);">The Road to Disunion · staff only</span>
+        </div>
+      </div>
+      <div role="group" aria-label="Class period" style="display: flex; align-items: center; gap: 6px; padding: 5px; border-radius: 999px; background: var(--color-neutral-800);">
+        <sc-for list="{{ periods }}" as="p" hint-placeholder-count="5">
+          <button aria-pressed="{{ p.pressed }}" onClick="{{ p.onClick }}" style="min-width: 46px; height: 44px; padding: 0 14px; border-radius: 999px; border: 0; background: {{ p.bg }}; color: {{ p.color }}; font-family: var(--font-heading); font-size: 17px; cursor: pointer;">{{ p.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+        <sc-if value="{{ isDemo }}" hint-placeholder-val="{{ true }}">
+          <span style="padding: 5px 12px; border-radius: 999px; background: var(--color-accent-200); color: var(--color-accent-900); font-weight: 700; font-size: 13px;">DEMO MODE · fictional data</span>
+        </sc-if>
+        <a href="Road to Disunion Tracker.dc.html" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--color-neutral-500); color: var(--color-neutral-100); text-decoration: none; font-weight: 700; font-size: 15px;">Student board ↗</a>
+        <span style="font-weight: 700; font-size: 15px;">{{ meName }}</span>
+        <button onClick="{{ doSignOut }}" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--color-neutral-500); background: transparent; color: var(--color-neutral-100); font-weight: 700; font-size: 15px; font-family: var(--font-body); cursor: pointer;" style-hover="background: var(--color-neutral-800);">Sign out</button>
+      </div>
+    </header>
+
+    <sc-if value="{{ domainWarn }}" hint-placeholder-val="{{ true }}">
+      <div role="note" style="padding: 8px 24px; background: var(--color-accent-100); border-bottom: 2px solid var(--color-accent-300); font-size: 14px; color: var(--color-accent-900);"><strong>Unverified setting:</strong> the school email domain hasn’t been confirmed. Real Google sign-in stays locked to a placeholder until you confirm it in firebase-config.js and firestore.rules.</div>
+    </sc-if>
+
+    <main style="padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 18px; max-width: 1600px; margin: 0 auto; box-sizing: border-box;">
+      <section aria-label="Class summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+        <sc-for list="{{ stats }}" as="s" hint-placeholder-count="7">
+          <button onClick="{{ s.onClick }}" aria-label="{{ s.aria }}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 16px; border-radius: var(--radius-md); border: 3px solid {{ s.border }}; background: {{ s.bg }}; cursor: pointer; text-align: left; font-family: var(--font-body); color: var(--color-text);" style-hover="filter: brightness(0.97);">
+            <span style="font-family: var(--font-heading); font-size: 32px; line-height: 1;">{{ s.value }}</span>
+            <span style="font-size: 14px; font-weight: 700;">{{ s.label }}</span>
+          </button>
+        </sc-for>
+      </section>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start;">
+        <!-- MAIN -->
+        <section style="flex: 1 1 720px; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 16px; border-radius: var(--radius-lg); background: var(--color-neutral-100); border: 3px solid var(--color-text);">
+          <div role="tablist" aria-label="Views" style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+              <button role="tab" aria-selected="{{ t.pressed }}" onClick="{{ t.onClick }}" style="min-height: 44px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--color-text); background: {{ t.bg }}; color: {{ t.color }}; font-weight: 700; font-size: 15px; font-family: var(--font-body); cursor: pointer;">{{ t.label }}</button>
+            </sc-for>
+          </div>
+
+          <!-- ROSTER / MAP filters -->
+          <sc-if value="{{ showFilters }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+              <input type="search" class="input" value="{{ q }}" onChange="{{ onSearch }}" aria-label="Search students" placeholder="Search by name or email" style="flex: 1 1 220px; min-height: 44px; font-size: 15px;">
+              <select class="input" value="{{ fLesson }}" onChange="{{ onLesson }}" aria-label="Filter by current stop" style="min-height: 44px; font-size: 15px; width: auto;">
+                <sc-for list="{{ lessonOpts }}" as="o" hint-placeholder-count="12"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+              </select>
+              <select class="input" value="{{ fStatus }}" onChange="{{ onStatus }}" aria-label="Filter by status" style="min-height: 44px; font-size: 15px; width: auto;">
+                <sc-for list="{{ statusOpts }}" as="o" hint-placeholder-count="9"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+              </select>
+              <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+                <button class="btn btn-ghost" onClick="{{ clearFilters }}" style="min-height: 44px;">Clear filters</button>
+              </sc-if>
+              <span aria-live="polite" style="font-size: 14px; font-weight: 600; color: var(--color-neutral-700);">{{ resultText }}</span>
+              <span style="flex: 1;"></span>
+              <button class="btn btn-primary" onClick="{{ toggleAdd }}" style="min-height: 44px;">+ Add student</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ addOpen }}" hint-placeholder-val="{{ false }}">
+            <form onSubmit="{{ submitAdd }}" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; padding: 14px; border-radius: var(--radius-md); background: var(--color-accent-2-100); border: 2px solid var(--color-accent-2-500);">
+              <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: 14px; flex: 2 1 220px;">School email
+                <input class="input" type="email" value="{{ add.email }}" onChange="{{ onAddEmail }}" placeholder="student@school domain" style="min-height: 44px;">
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: 14px; flex: 1 1 160px;">Display name (first + last initial)
+                <input class="input" value="{{ add.name }}" onChange="{{ onAddName }}" placeholder="e.g. Jordan C." style="min-height: 44px;">
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: 14px;">Period
+                <select class="input" value="{{ add.period }}" onChange="{{ onAddPeriod }}" style="min-height: 44px; width: auto;">
+                  <option value="1">1</option><option value="2">2</option><option value="5">5</option><option value="7">7</option>
+                </select>
+              </label>
+              <button type="submit" class="btn btn-primary" style="min-height: 44px;">Add to roster</button>
+              <button type="button" class="btn btn-ghost" onClick="{{ toggleAdd }}" style="min-height: 44px;">Cancel</button>
+              <span style="flex-basis: 100%; font-size: 13px; color: var(--color-neutral-700);">They can sign in right away. Their avatar appears on the board after their first sign-in.</span>
+            </form>
+          </sc-if>
+
+          <!-- ROSTER VIEW -->
+          <sc-if value="{{ isRoster }}" hint-placeholder-val="{{ true }}">
+            <div role="table" aria-label="Roster" style="display: flex; flex-direction: column;">
+              <div role="row" style="display: grid; grid-template-columns: minmax(0,2.2fr) 54px minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,.9fr) minmax(250px,auto); gap: 10px; padding: 6px 10px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--color-neutral-700);">
+                <span role="columnheader">Student</span><span role="columnheader">Per.</span><span role="columnheader">Current stop</span><span role="columnheader">Status (private)</span><span role="columnheader">Progress</span><span role="columnheader">Quick actions</span>
+              </div>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+                <div role="row" style="display: grid; grid-template-columns: minmax(0,2.2fr) 54px minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,.9fr) minmax(250px,auto); gap: 10px; align-items: center; padding: 8px 10px; border-top: 2px solid var(--color-neutral-200); background: {{ r.rowBg }};">
+                  <button role="cell" onClick="{{ r.onOpen }}" aria-label="{{ r.aria }}" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; border: 0; background: transparent; cursor: pointer; text-align: left; font-family: var(--font-body); color: var(--color-text); min-width: 0;">
+                    <span style="display: grid; place-items: center; width: 40px; height: 48px; flex-shrink: 0; border-radius: 12px; background: var(--color-accent-2-100); opacity: {{ r.avatarOpacity }};"><img src="{{ r.avatarSrc }}" alt="" style="width: 22px; height: 42px; object-fit: contain;"></span>
+                    <span style="display: flex; flex-direction: column; min-width: 0;">
+                      <span style="font-weight: 700; font-size: 16px; text-decoration: underline; text-decoration-color: var(--color-neutral-400); text-underline-offset: 3px;">{{ r.name }}</span>
+                      <span style="font-size: 13px; color: var(--color-neutral-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ r.email }}</span>
+                    </span>
+                  </button>
+                  <span role="cell" style="font-family: var(--font-heading); font-size: 18px;">{{ r.period }}</span>
+                  <span role="cell" style="display: flex; flex-direction: column; min-width: 0;">
+                    <span style="font-weight: 700; font-size: 15px;">{{ r.nodeLabel }}</span>
+                    <span style="font-size: 13px; color: var(--color-neutral-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ r.nodeShort }}</span>
+                  </span>
+                  <span role="cell"><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; background: {{ r.statusBg }}; color: {{ r.statusColor }}; font-weight: 700; font-size: 13px;">{{ r.statusLabel }}</span></span>
+                  <span role="cell" style="display: flex; flex-direction: column; font-size: 13px; font-weight: 600;">
+                    <span>{{ r.lessonsText }}</span><span style="color: var(--color-neutral-700);">{{ r.mcText }}</span>
+                  </span>
+                  <span role="cell" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <button class="btn btn-primary" onClick="{{ r.onVerify }}" disabled="{{ r.verifyDisabled }}" aria-label="{{ r.verifyAria }}" style="min-height: 40px; padding: 0 12px; font-size: 14px;">✓ Verify</button>
+                    <button class="btn btn-secondary" onClick="{{ r.onPractice }}" disabled="{{ r.notSigned }}" style="min-height: 40px; padding: 0 12px; font-size: 14px;">Practice</button>
+                    <button class="btn btn-ghost" onClick="{{ r.onOpen }}" style="min-height: 40px; padding: 0 12px; font-size: 14px;">Details</button>
+                  </span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ rowsEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 24px 10px; color: var(--color-neutral-700);">No students match. Try clearing the filters or switching periods.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- MAP VIEW -->
+          <sc-if value="{{ isMap }}" hint-placeholder-val="{{ false }}">
+            <div style="overflow-x: auto; padding-bottom: 6px;">
+              <div style="display: grid; grid-auto-flow: column; grid-auto-columns: minmax(124px, 1fr); gap: 8px; min-width: 1100px;">
+                <sc-for list="{{ mapCols }}" as="c" hint-placeholder-count="11">
+                  <div style="display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: var(--radius-md); background: {{ c.bg }}; border: 2px solid {{ c.border }}; min-height: 260px;">
+                    <img src="{{ c.src }}" alt="" style="width: 100%; height: 56px; object-fit: contain;">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 4px;">
+                      <span style="font-family: var(--font-heading); font-size: 18px;">{{ c.label }}</span>
+                      <span style="padding: 1px 9px; border-radius: 999px; background: var(--color-text); color: var(--color-neutral-100); font-weight: 700; font-size: 13px;">{{ c.count }}</span>
+                    </div>
+                    <span style="font-size: 12px; font-weight: 600; color: var(--color-neutral-700); line-height: 1.2;">{{ c.short }}</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                      <sc-for list="{{ c.people }}" as="pp" hint-placeholder-count="0">
+                        <button onClick="{{ pp.onOpen }}" aria-label="{{ pp.aria }}" style="display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 2px 8px 2px 2px; border-radius: 999px; border: 2px solid {{ pp.border }}; background: var(--color-bg); cursor: pointer; font-family: var(--font-body); color: var(--color-text); font-weight: 700; font-size: 13px; text-align: left;" style-hover="background: var(--color-accent-100);">
+                          <img src="{{ pp.src }}" alt="" style="width: 16px; height: 30px; object-fit: contain;">
+                          <span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ pp.name }}</span>
+                          <span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: {{ pp.dot }}; flex-shrink: 0;"></span>
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; font-weight: 600; color: var(--color-neutral-800);">
+              <sc-for list="{{ legend }}" as="lg" hint-placeholder-count="5">
+                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 12px; height: 12px; border-radius: 50%; background: {{ lg.dot }};"></span>{{ lg.label }}</span>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- HISTORY VIEW -->
+          <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; font-size: 15px; color: var(--color-neutral-800);">Every staff change is recorded here. Entries can’t be edited or deleted. <strong>Undo</strong> adds a new, logged correction that restores the previous value.</p>
+            <div style="display: flex; flex-direction: column;">
+              <sc-for list="{{ history }}" as="h" hint-placeholder-count="4">
+                <div style="display: grid; grid-template-columns: 52px minmax(0,1.1fr) minmax(0,1.2fr) minmax(0,2fr) auto; gap: 10px; align-items: center; padding: 10px 6px; border-top: 2px solid var(--color-neutral-200);">
+                  <span style="font-family: var(--font-heading); font-size: 16px; color: var(--color-neutral-700);">#{{ h.n }}</span>
+                  <span style="display: flex; flex-direction: column; font-size: 13px;"><strong style="font-size: 14px;">{{ h.when }}</strong><span style="color: var(--color-neutral-700);">by {{ h.actor }}</span></span>
+                  <span style="display: flex; flex-direction: column;"><strong style="font-size: 15px;">{{ h.target }}</strong><span style="font-size: 13px; color: var(--color-neutral-700);">{{ h.action }}</span></span>
+                  <span style="display: flex; flex-direction: column; font-size: 14px;"><span style="font-weight: 700;">{{ h.change }}</span><span style="color: var(--color-neutral-700);">{{ h.reason }}</span></span>
+                  <span>
+                    <sc-if value="{{ h.canUndo }}" hint-placeholder-val="{{ false }}"><button class="btn btn-secondary" onClick="{{ h.onUndo }}" style="min-height: 40px; font-size: 14px;">Undo</button></sc-if>
+                    <sc-if value="{{ h.undone }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 700; color: var(--color-neutral-700);">Undone</span></sc-if>
+                  </span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ historyEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 20px 6px; color: var(--color-neutral-700);">No changes recorded yet for this period.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- WALKTHROUGH -->
+          <sc-if value="{{ isWalk }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start;">
+              <ol style="flex: 1 1 380px; min-width: 0; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px;">
+                <sc-for list="{{ walk }}" as="w" hint-placeholder-count="7">
+                  <li style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--color-bg); border: 2px solid {{ w.border }};">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <span style="display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; background: {{ w.numBg }}; color: var(--color-neutral-100); font-family: var(--font-heading); font-size: 16px;">{{ w.num }}</span>
+                      <strong style="font-size: 16px; flex: 1;">{{ w.title }}</strong>
+                      <button class="btn btn-primary" onClick="{{ w.onAction }}" style="min-height: 40px; font-size: 14px; white-space: nowrap;">{{ w.actionLabel }}</button>
+                    </div>
+                    <span style="font-size: 14px; color: var(--color-neutral-800);">{{ w.desc }}</span>
+                    <sc-if value="{{ w.result }}" hint-placeholder-val="{{ false }}">
+                      <span style="padding: 6px 10px; border-radius: 10px; background: {{ w.resultBg }}; font-size: 14px; font-weight: 700;">{{ w.result }}</span>
+                    </sc-if>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; font-weight: 700;">
+                      <span style="padding: 2px 8px; border-radius: 999px; background: var(--color-accent-2-200); color: var(--color-accent-2-900);">Demo: {{ w.demo }}</span>
+                      <span style="padding: 2px 8px; border-radius: 999px; background: var(--color-accent-100); color: var(--color-accent-900);">Production: {{ w.prod }}</span>
+                    </div>
+                  </li>
+                </sc-for>
+              </ol>
+              <div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 12px;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; font-weight: 700;">
+                  Live student board, signed in as
+                  <select class="input" value="{{ boardAs }}" onChange="{{ onBoardAs }}" style="min-height: 40px; width: auto; font-size: 14px;">
+                    <sc-for list="{{ boardAsOpts }}" as="o" hint-placeholder-count="4"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+                  </select>
+                  <select class="input" value="{{ boardView }}" onChange="{{ onBoardView }}" style="min-height: 40px; width: auto; font-size: 14px;">
+                    <option value="world">World map</option><option value="week1">Week 1</option><option value="week2">Week 2</option>
+                  </select>
+                </div>
+                <iframe title="Student game board preview" src="{{ boardSrc }}" style="width: 100%; aspect-ratio: 16 / 9; border: 3px solid var(--color-text); border-radius: var(--radius-md); background: var(--color-text);"></iframe>
+                <span style="font-size: 13px; color: var(--color-neutral-700);">This is the real student page in a frame. It updates live when you make changes here, because both share the demo database in this browser.</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- SECURITY TESTS -->
+          <sc-if value="{{ isSec }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+              <p style="margin: 0; flex: 1 1 400px; font-size: 15px; color: var(--color-neutral-800);">Each test tries a forbidden action <strong>as that account</strong>, through the same permission check the app uses in demo mode. Every one should be denied.</p>
+              <button class="btn btn-primary" onClick="{{ runAllSec }}" style="min-height: 44px;">Run all tests</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <sc-for list="{{ secTests }}" as="t" hint-placeholder-count="9">
+                <div style="display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 10px 14px; border-radius: var(--radius-md); background: var(--color-bg); border: 2px solid {{ t.border }};">
+                  <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                    <strong style="font-size: 15px;">{{ t.title }}</strong>
+                    <span style="font-size: 13px; color: var(--color-neutral-700);">As {{ t.who }}</span>
+                    <sc-if value="{{ t.result }}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size: 13px; font-weight: 700; color: {{ t.resultColor }};">{{ t.result }}</span>
+                    </sc-if>
+                  </div>
+                  <button class="btn btn-secondary" onClick="{{ t.onRun }}" style="min-height: 40px; font-size: 14px;">Run</button>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding: 12px 14px; border-radius: var(--radius-md); background: var(--color-accent-100); border: 2px solid var(--color-accent-400); font-size: 14px; line-height: 1.5;"><strong>Not yet verified for production.</strong> These are demo-mode checks. The real Firestore rules have their own automated suite (tests/firestore.rules.test.js, 17 tests). It is written but has <strong>not been run</strong>. It needs the Firebase emulator: <code>npm install</code>, then <code>npm run test:rules</code>.</div>
+          </sc-if>
+        </section>
+
+        <!-- SIDE: PENDING -->
+        <aside aria-label="Needs attention" style="flex: 1 1 330px; max-width: 460px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+          <section style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--radius-lg); background: var(--color-neutral-100); border: 3px solid var(--color-text);">
+            <h2 style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 21px;">Enrollment requests <span style="font-family: var(--font-body); font-size: 14px; font-weight: 700; color: var(--color-neutral-700);">all periods</span></h2>
+            <sc-if value="{{ enrollEmpty }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 14px; color: var(--color-neutral-700);">No one is waiting. New school accounts appear here when they first sign in.</span>
+            </sc-if>
+            <sc-for list="{{ enroll }}" as="e" hint-placeholder-count="0">
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-bg); border: 2px solid var(--color-accent-400);">
+                <div style="display: flex; flex-direction: column;"><strong style="font-size: 15px;">{{ e.googleName }}</strong><span style="font-size: 13px; color: var(--color-neutral-700);">{{ e.email }} · {{ e.when }}</span></div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end;">
+                  <label style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; font-weight: 700; flex: 1 1 120px;">Display name
+                    <input class="input" value="{{ e.name }}" onChange="{{ e.onName }}" style="min-height: 40px; font-size: 14px;">
+                  </label>
+                  <label style="display: flex; flex-direction: column; gap: 2px; font-size: 12px; font-weight: 700;">Period
+                    <select class="input" value="{{ e.period }}" onChange="{{ e.onPeriod }}" style="min-height: 40px; width: auto; font-size: 14px;">
+                      <option value="1">1</option><option value="2">2</option><option value="5">5</option><option value="7">7</option>
+                    </select>
+                  </label>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn btn-primary" onClick="{{ e.onApprove }}" style="min-height: 40px; font-size: 14px;">Approve</button>
+                  <button class="btn btn-ghost" onClick="{{ e.onDeny }}" style="min-height: 40px; font-size: 14px;">Deny</button>
+                </div>
+              </div>
+            </sc-for>
+          </section>
+
+          <sc-for list="{{ queues }}" as="qq" hint-placeholder-count="3">
+            <section style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: var(--radius-lg); background: var(--color-neutral-100); border: 3px solid var(--color-text);">
+              <h2 style="margin: 0; display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-weight: 400; font-size: 20px;">
+                <span style="width: 14px; height: 14px; border-radius: 50%; background: {{ qq.dot }};"></span>{{ qq.title }}
+                <span style="margin-left: auto; padding: 1px 10px; border-radius: 999px; background: var(--color-text); color: var(--color-neutral-100); font-family: var(--font-body); font-size: 13px; font-weight: 700;">{{ qq.count }}</span>
+              </h2>
+              <span style="font-size: 13px; color: var(--color-neutral-700);">{{ qq.hint }}</span>
+              <sc-for list="{{ qq.items }}" as="it" hint-placeholder-count="2">
+                <div style="display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 4px; border-radius: 999px; background: var(--color-bg); border: 2px solid var(--color-neutral-300);">
+                  <button onClick="{{ it.onOpen }}" aria-label="{{ it.aria }}" style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; min-height: 40px; padding: 0 6px 0 2px; border: 0; background: transparent; cursor: pointer; font-family: var(--font-body); color: var(--color-text); text-align: left;">
+                    <img src="{{ it.src }}" alt="" style="width: 18px; height: 34px; object-fit: contain;">
+                    <span style="display: flex; flex-direction: column; min-width: 0;"><strong style="font-size: 14px;">{{ it.name }}</strong><span style="font-size: 12px; color: var(--color-neutral-700);">{{ it.where }}</span></span>
+                  </button>
+                  <sc-if value="{{ it.canVerify }}" hint-placeholder-val="{{ false }}">
+                    <button class="btn btn-primary" onClick="{{ it.onVerify }}" aria-label="{{ it.verifyAria }}" style="min-height: 36px; padding: 0 12px; font-size: 13px;">✓ Verify</button>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{ qq.empty }}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: var(--color-neutral-700);">None right now.</span></sc-if>
+            </section>
+          </sc-for>
+          <sc-if value="{{ isDemo }}" hint-placeholder-val="{{ true }}">
+            <button class="btn btn-ghost" onClick="{{ askReset }}" style="align-self: flex-start; min-height: 44px;">Reset demo data</button>
+          </sc-if>
+        </aside>
+      </div>
+    </main>
+
+    <!-- ===== STUDENT DRAWER ===== -->
+    <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeDrawer }}" style="position: fixed; inset: 0; background: rgba(32,30,29,.45); z-index: 40;"></div>
+      <aside role="dialog" aria-modal="true" aria-labelledby="drawer-title" style="position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100vw); overflow-y: auto; z-index: 41; background: var(--color-bg); border-left: 5px solid var(--color-text); display: flex; flex-direction: column; gap: 16px; padding: 18px 22px 30px; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <span style="display: grid; place-items: center; width: 64px; height: 80px; border-radius: 16px; background: var(--color-accent-2-100); flex-shrink: 0;"><img src="{{ d.avatarSrc }}" alt="" style="width: 36px; height: 70px; object-fit: contain;"></span>
+          <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+            <h2 id="drawer-title" style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 28px;">{{ d.name }}</h2>
+            <span style="font-size: 14px; color: var(--color-neutral-700); overflow-wrap: anywhere;">{{ d.email }}</span>
+          </div>
+          <button ref="{{ drawerCloseRef }}" onClick="{{ closeDrawer }}" aria-label="Close student details (Escape)" style="width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--color-text); background: var(--color-neutral-100); font-size: 20px; font-weight: 700; cursor: pointer; flex-shrink: 0; color: var(--color-text);">✕</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px;">
+          <label style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-neutral-100); font-size: 13px; font-weight: 700; color: var(--color-neutral-700);">PERIOD
+            <select class="input" value="{{ d.period }}" onChange="{{ d.onPeriod }}" style="min-height: 40px; width: auto; font-size: 15px;">
+              <option value="1">Period 1</option><option value="2">Period 2</option><option value="5">Period 5</option><option value="7">Period 7</option>
+            </select>
+          </label>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-neutral-100); font-size: 13px; font-weight: 700; color: var(--color-neutral-700);">ACCESS
+            <span style="font-size: 15px; color: var(--color-text);">{{ d.accessText }}</span>
+            <button class="btn btn-secondary" onClick="{{ d.onAccess }}" style="min-height: 36px; font-size: 13px; align-self: flex-start;">{{ d.accessBtn }}</button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-neutral-100); font-size: 13px; font-weight: 700; color: var(--color-neutral-700);">CURRENT STOP
+            <span style="font-size: 15px; color: var(--color-text);">{{ d.nodeText }}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-neutral-100); font-size: 13px; font-weight: 700; color: var(--color-neutral-700);">STATUS (PRIVATE)
+            <span><span style="display: inline-block; padding: 3px 10px; border-radius: 999px; background: {{ d.statusBg }}; color: {{ d.statusColor }}; font-size: 13px;">{{ d.statusLabel }}</span></span>
+          </div>
+        </div>
+
+        <sc-if value="{{ d.notSigned }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 12px 14px; border-radius: var(--radius-md); background: var(--color-neutral-200); font-size: 15px;">Hasn’t signed in yet. They start at L1 and pick an avatar on first sign-in. Progress actions unlock after that.</div>
+        </sc-if>
+
+        <sc-if value="{{ d.signed }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <h3 style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 19px;">Route</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+              <sc-for list="{{ d.route }}" as="rt" hint-placeholder-count="11">
+                <span title="{{ rt.title }}" style="padding: 4px 10px; border-radius: 999px; background: {{ rt.bg }}; color: {{ rt.color }}; border: 2px solid {{ rt.border }}; font-weight: 700; font-size: 13px;">{{ rt.label }}</span>
+              </sc-for>
+            </div>
+            <span style="font-size: 13px; color: var(--color-neutral-700);">{{ d.routeText }}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <h3 style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 19px;">Mastery checks</h3>
+            <sc-for list="{{ d.mcs }}" as="m" hint-placeholder-count="3">
+              <div style="display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 12px; background: var(--color-neutral-100);">
+                <img src="{{ m.src }}" alt="" style="width: 40px; height: 30px; object-fit: contain;">
+                <span style="flex: 1; font-size: 14px;"><strong>{{ m.id }}</strong> · {{ m.title }}</span>
+                <span style="padding: 2px 10px; border-radius: 999px; background: {{ m.bg }}; color: {{ m.color }}; font-weight: 700; font-size: 12px;">{{ m.state }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="padding: 10px 14px; border-radius: var(--radius-md); background: var(--color-accent-2-100); border: 2px solid var(--color-accent-2-500); font-size: 15px;"><strong>Next step:</strong> {{ d.next }}</div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: var(--radius-md); border: 3px solid var(--color-text); background: var(--color-neutral-100);">
+            <h3 style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 19px;">Actions</h3>
+            <button class="btn btn-primary" onClick="{{ d.onVerify }}" disabled="{{ d.verifyDisabled }}" style="min-height: 46px; font-size: 15px; align-self: flex-start;">{{ d.verifyLabel }}</button>
+            <label for="composer" style="font-size: 14px; font-weight: 700;">Private message to {{ d.first }}</label>
+            <textarea id="composer" ref="{{ composerRef }}" class="input" value="{{ composer }}" onChange="{{ onComposer }}" rows="3" placeholder="Next-step instructions or feedback. Only this student and staff can see it." style="font-size: 15px; border-radius: var(--radius-md); min-height: 84px; resize: vertical;"></textarea>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <button class="btn btn-secondary" onClick="{{ d.onPractice }}" style="min-height: 42px; font-size: 14px;">Request more practice</button>
+              <button class="btn btn-ghost" onClick="{{ d.onFeedback }}" style="min-height: 42px; font-size: 14px;">Send feedback only</button>
+            </div>
+          </div>
+
+          <details style="padding: 12px 14px; border-radius: var(--radius-md); background: var(--color-neutral-100); border: 2px solid var(--color-neutral-300);">
+            <summary style="cursor: pointer; font-family: var(--font-heading); font-size: 18px;">Correct position</summary>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-top: 10px;">
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 13px; font-weight: 700;">Stop
+                <select class="input" value="{{ corr.node }}" onChange="{{ onCorrNode }}" style="min-height: 40px; width: auto; font-size: 14px;">
+                  <sc-for list="{{ stopOpts }}" as="o" hint-placeholder-count="11"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+                </select>
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 3px; font-size: 13px; font-weight: 700;">Status
+                <select class="input" value="{{ corr.status }}" onChange="{{ onCorrStatus }}" style="min-height: 40px; width: auto; font-size: 14px;">
+                  <sc-for list="{{ statusSetOpts }}" as="o" hint-placeholder-count="7"><option value="{{ o.id }}">{{ o.label }}</option></sc-for>
+                </select>
+              </label>
+              <button class="btn btn-secondary" onClick="{{ d.onCorrect }}" style="min-height: 40px; font-size: 14px;">Review change…</button>
+            </div>
+          </details>
+
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <h3 style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 19px;">Private feedback sent</h3>
+            <sc-for list="{{ d.feedback }}" as="f" hint-placeholder-count="0">
+              <div style="padding: 8px 12px; border-radius: 12px; background: var(--color-neutral-100); border-left: 0; font-size: 14px;">
+                <div style="font-size: 12px; font-weight: 700; color: var(--color-neutral-700);">{{ f.meta }}</div>{{ f.text }}
+              </div>
+            </sc-for>
+            <sc-if value="{{ d.feedbackEmpty }}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: var(--color-neutral-700);">None yet.</span></sc-if>
+          </div>
+        </sc-if>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <h3 style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 19px;">Change history</h3>
+          <sc-for list="{{ d.history }}" as="h" hint-placeholder-count="0">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; background: var(--color-neutral-100); font-size: 13px;">
+              <span style="flex: 1; min-width: 0;"><strong>#{{ h.n }} {{ h.action }}</strong> · {{ h.change }}<br><span style="color: var(--color-neutral-700);">{{ h.when }} · {{ h.actor }}</span></span>
+              <sc-if value="{{ h.canUndo }}" hint-placeholder-val="{{ false }}"><button class="btn btn-ghost" onClick="{{ h.onUndo }}" style="min-height: 36px; font-size: 13px;">Undo</button></sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{ d.historyEmpty }}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: var(--color-neutral-700);">No staff changes yet.</span></sc-if>
+        </div>
+
+        <button class="btn btn-ghost" onClick="{{ d.onRemove }}" style="align-self: flex-start; min-height: 44px; color: var(--color-accent-800);">Remove from class…</button>
+      </aside>
+    </sc-if>
+  </sc-if>
+
+  <!-- ===== CONFIRM ===== -->
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 60; background: rgba(32,30,29,.55); display: flex; align-items: center; justify-content: center; padding: 20px;">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" style="width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; box-sizing: border-box; background: var(--color-bg); border: 5px solid var(--color-text); border-radius: var(--radius-lg); box-shadow: inset 0 0 0 4px var(--color-accent-400);">
+        <h2 id="confirm-title" style="margin: 0; font-family: var(--font-heading); font-weight: 400; font-size: 26px;">{{ cf.title }}</h2>
+        <p style="margin: 0; font-size: 16px; line-height: 1.45;">{{ cf.body }}</p>
+        <sc-if value="{{ cf.hasChange }}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 10px; align-items: center; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-neutral-100);">
+            <span style="font-size: 14px;"><span style="font-size: 12px; font-weight: 700; color: var(--color-neutral-700);">NOW</span><br><strong>{{ cf.from }}</strong></span>
+            <span aria-hidden="true" style="font-family: var(--font-heading); font-size: 22px;">→</span>
+            <span style="font-size: 14px;"><span style="font-size: 12px; font-weight: 700; color: var(--color-neutral-700);">AFTER</span><br><strong>{{ cf.to }}</strong></span>
+          </div>
+        </sc-if>
+        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 700;">{{ cf.reasonLabel }}
+          <input ref="{{ confirmInputRef }}" class="input" value="{{ cf.reason }}" onChange="{{ onReason }}" placeholder="{{ cf.reasonPh }}" style="min-height: 44px; font-size: 15px;">
+        </label>
+        <sc-if value="{{ cf.err }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size: 14px; font-weight: 700; color: var(--color-accent-800);">{{ cf.err }}</span></sc-if>
+        <span style="font-size: 13px; color: var(--color-neutral-700);">This will be saved to the change history with your name and the time.</span>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button class="btn btn-ghost" onClick="{{ cancelConfirm }}" style="min-height: 46px;">Cancel</button>
+          <button class="btn btn-primary" onClick="{{ doConfirm }}" style="min-height: 46px;">{{ cf.label }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <div role="status" aria-live="polite" style="position: fixed; left: 20px; bottom: 20px; z-index: 70; max-width: 520px;">
+    <sc-if value="{{ toastShow }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 12px 18px; border-radius: var(--radius-md); background: {{ toastBg }}; color: var(--color-neutral-100); font-weight: 700; font-size: 15px; box-shadow: var(--shadow-lg);">{{ toastText }}</div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const TS = { current: 'Working', practice: 'Practice underway', ready: 'Requesting approval', submitted: 'Awaiting feedback', mastered: 'Mastered', needs: 'Needs support', complete: 'Unit complete' };
+const TONE = { current: ['var(--color-neutral-200)', 'var(--color-text)'], practice: ['var(--color-accent-2-200)', 'var(--color-accent-2-900)'], ready: ['var(--color-accent-700)', 'var(--color-neutral-100)'], submitted: ['var(--color-accent-200)', 'var(--color-accent-900)'], mastered: ['var(--color-accent-2-300)', 'var(--color-accent-2-900)'], needs: ['var(--color-accent-300)', 'var(--color-accent-900)'], complete: ['var(--color-accent-2-700)', 'var(--color-neutral-100)'], none: ['var(--color-neutral-100)', 'var(--color-neutral-700)'], revoked: ['var(--color-neutral-400)', 'var(--color-text)'] };
+const DOT = { current: 'var(--color-neutral-500)', practice: 'var(--color-accent-2-500)', ready: 'var(--color-accent-700)', submitted: 'var(--color-accent-400)', mastered: 'var(--color-accent-2-700)', needs: 'var(--color-accent-900)', complete: 'var(--color-accent-2-800)' };
+const STOPS = ['L1', 'L2', 'MC1', 'L3', 'MC2', 'L4', 'L5', 'MC3', 'L6', 'L7', 'FINISH'];
+const nextStop = (n) => STOPS[STOPS.indexOf(n) + 1] || null;
+const DD = 'demo.invalid';
+
+class Component extends DCLogic {
+  state = { cfg: null, mode: null, auth: { status: 'loading' }, data: null, period: 2, view: 'roster', q: '', fLesson: '', fStatus: '', drawer: null, fb: [], composer: '', corr: { node: 'L1', status: 'current' }, confirm: null, toast: null, addOpen: false, add: { email: '', name: '', period: '2' }, drafts: {}, sec: {}, walkRes: {}, boardAs: 'demo01', boardView: 'week1', domainVerified: true };
+  drawerCloseRef = React.createRef(); composerRef = React.createRef(); confirmInputRef = React.createRef();
+
+  componentDidMount() {
+    this.onKey = (e) => { if (e.key !== 'Escape') return; if (this.state.confirm) this.setState({ confirm: null }); else if (this.state.drawer) this.closeDrawer(); };
+    window.addEventListener('keydown', this.onKey);
+    fetch('board_config.json').then((r) => r.json()).then(async (cfg) => {
+      this.setState({ cfg });
+      try {
+        const m = await import('./backend.js');
+        this.m = m; this.backend = await m.createBackend({ cfg });
+        this.setState({ mode: this.backend.mode, domainVerified: m.domainInfo.domainVerified });
+        this.unAuth = this.backend.onAuthChange((a) => this.onAuth(a));
+      } catch (e) { this.setState({ auth: { status: 'error', error: String(e) } }); }
+    });
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); this.unStaff && this.unStaff(); this.unFb && this.unFb(); this.unAuth && this.unAuth(); clearTimeout(this.tt); }
+  onAuth(a) {
+    this.unStaff && this.unStaff(); this.unStaff = null;
+    this.setState({ auth: a, data: a.status === 'staff' ? this.state.data : null, drawer: a.status === 'staff' ? this.state.drawer : null });
+    if (a.status === 'staff') this.unStaff = this.backend.listenStaff((d) => this.setState({ data: d }));
+  }
+  toast(text, err) { clearTimeout(this.tt); this.setState({ toast: { text, err } }); this.tt = setTimeout(() => this.setState({ toast: null }), 4500); }
+  async run(op, args, okMsg) {
+    try { await this.backend.run(op, args); if (okMsg) this.toast(okMsg); return true; }
+    catch (e) { this.toast(e.message || String(e), true); return false; }
+  }
+  ask(c) { this.lastFocus = document.activeElement; this.setState({ confirm: { reason: '', err: '', ...c } }, () => setTimeout(() => this.confirmInputRef.current && this.confirmInputRef.current.focus(), 30)); }
+  async doConfirm() {
+    const c = this.state.confirm; if (!c) return;
+    if (c.needsReason && !c.reason.trim()) return this.setState({ confirm: { ...c, err: 'Please add a short reason — it goes in the change history.' } });
+    const ok = await c.run(c.reason.trim());
+    if (ok !== false) { this.setState({ confirm: null }); const f = this.lastFocus; if (f && f.focus && document.contains(f)) f.focus(); }
+  }
+  openDrawer(email, focusComposer) {
+    const r = this.rows().find((x) => x.email === email); if (!r) return;
+    this.unFb && this.unFb(); this.unFb = null;
+    this.setState({ drawer: email, composer: '', fb: [], corr: { node: r.node || 'L1', status: r.status || 'current' } }, () => setTimeout(() => (focusComposer && this.composerRef.current ? this.composerRef.current : this.drawerCloseRef.current)?.focus(), 40));
+    if (r.uid) this.unFb = this.backend.listenFeedback(r.uid, (fb) => this.setState({ fb }));
+  }
+  closeDrawer() { this.unFb && this.unFb(); this.unFb = null; this.setState({ drawer: null }); }
+
+  title(id) {
+    const c = this.state.cfg; if (id === 'FINISH') return 'Unit Complete';
+    const l = c.lessons.find((x) => x.id === id); if (l) return l.title;
+    const m = c.mastery_checks.find((x) => x.id === id); return m ? `Mastery Check ${id.slice(2)}: ${m.title}` : id;
+  }
+  nextStep(node, status) {
+    if (!node) return 'Waiting for first sign-in.';
+    const nx = nextStop(node);
+    if (node === 'FINISH' || status === 'complete') return 'Unit complete.';
+    if (status === 'ready') return node.startsWith('MC') ? `Ready to take ${node} — verify when the check is done.` : `Requesting approval at ${node} — review their work, then Verify to move them to ${nx}.`;
+    if (status === 'submitted') return `Work submitted at ${node} — give feedback, then Verify or request practice.`;
+    if (status === 'needs') return `Doing targeted practice at ${node}, then reassess.`;
+    if (status === 'mastered') return `Verified at ${node} — advance to ${nx}.`;
+    if (status === 'practice') return `Working through ${node} activities (Must Do → Should Do).`;
+    return `Starting ${node}: ${this.title(node)}.`;
+  }
+  rows() {
+    const d = this.state.data; if (!d) return [];
+    return d.roster.map((r) => {
+      const u = r.uid ? d.users[r.uid] : null, p = r.uid ? d.progress[r.uid] : null;
+      const node = u && p ? p.node : null, status = u && p ? p.status : null;
+      const idx = node ? STOPS.indexOf(node) : -1;
+      const done = node ? STOPS.slice(0, idx).concat(status === 'mastered' || status === 'complete' ? [node] : []) : [];
+      return { ...r, signed: !!u, node, status, idx, done, avatar: u ? u.avatar : null };
+    }).sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }
+  verify(r) {
+    if (!r.node || r.node === 'FINISH') return;
+    const nx = nextStop(r.node), after = nx === 'FINISH' ? 'complete' : 'current';
+    const isMc = r.node.startsWith('MC');
+    this.ask({ title: isMc ? `Verify ${r.node} mastery?` : `Verify ${r.node} and advance?`,
+      body: `${r.displayName}'s avatar will move to ${nx}${nx === 'FINISH' ? ' (unit complete)' : ''} on the Period ${r.period} board.`,
+      hasChange: true, from: `${r.node} · ${TS[r.status]}`, to: `${nx} · ${after === 'complete' ? 'Unit complete' : 'Working'}`,
+      reasonLabel: 'Note (optional)', reasonPh: isMc ? 'e.g. 2/2 MCQ + strong explanation' : 'e.g. Must Do checked in class', label: 'Verify & advance', needsReason: false,
+      run: (reason) => this.run('setProgress', { uid: r.uid, node: nx, status: after, action: isMc ? `Mastery verified (${r.node})` : `${r.node} verified`, reason }, `${r.displayName} moved to ${nx}.`) });
+  }
+
+  renderVals() {
+    const S = this.state, a = S.auth, demo = S.mode === 'demo', b = this.backend;
+    const isStaff = a.status === 'staff';
+    const gateCopy = {
+      loading: ['Connecting', 'Loading Mission Control…', 'Checking your sign-in.'],
+      signedOut: ['Staff only', 'Sign in to Mission Control', 'Use your school Google account. Only staff listed by the school administrator can open this page — that list can’t be changed from the app.'],
+      student: ['Staff only', 'This page is for teachers', `${a.name || 'This account'} is a student account. Students can’t open Mission Control. The server rules block staff data for them even if they find this page.`],
+      pending: ['Staff only', 'This page is for teachers', 'This account isn’t on the staff list.'],
+      denied: ['Staff only', 'This page is for teachers', 'This account isn’t on the staff list.'],
+      revoked: ['Staff only', 'This page is for teachers', 'This account isn’t on the staff list.'],
+      blocked: ['School accounts only', 'Use your school Google account', `${a.email || 'This account'} isn’t a school-managed account.`],
+      error: ['Connection problem', 'Mission Control couldn’t load', a.error || '']
+    }[a.status] || ['Staff only', 'Sign in', ''];
+    const gate = { kicker: gateCopy[0], title: gateCopy[1], body: gateCopy[2], showGoogle: a.status === 'signedOut', googleDisabled: demo, googleNote: demo ? 'Google sign-in turns on once the school’s Firebase project is connected. For now, pick a demo account below.' : '', showSignOut: !['signedOut', 'loading', 'staff'].includes(a.status), showDemo: demo && a.status !== 'loading' };
+    const base = { gateOpen: !isStaff, gate, isStaff, isDemo: demo, confirmOpen: !!S.confirm, toastShow: !!S.toast, toastText: S.toast ? S.toast.text : '', toastBg: S.toast && S.toast.err ? 'var(--color-accent-800)' : 'var(--color-accent-2-800)',
+      doSignIn: async () => { try { await b.signIn(); } catch (e) { this.toast(e.message, true); } }, doSignOut: () => b && b.signOut(),
+      demoAccounts: demo && b ? b.demoAccounts().map((x) => ({ name: x.name, meta: x.meta, border: x.kind === 'staff' ? 'var(--color-accent-600)' : 'var(--color-neutral-400)', onClick: () => b.demoSignIn(x.id) })).sort((p, q) => (q.border > p.border) - (p.border > q.border)) : [],
+      cf: S.confirm || {}, onReason: (e) => this.setState({ confirm: { ...S.confirm, reason: e.target.value, err: '' } }), cancelConfirm: () => this.setState({ confirm: null }), doConfirm: () => this.doConfirm(),
+      drawerCloseRef: this.drawerCloseRef, composerRef: this.composerRef, confirmInputRef: this.confirmInputRef };
+    if (!isStaff || !S.cfg || !S.data) return { ...base, periods: [], stats: [], tabs: [], rows: [], drawerOpen: false };
+
+    const cfg = S.cfg, D = S.data, all = this.rows(), allP = S.period === 'all';
+    const inP = all.filter((r) => allP || r.period === S.period);
+    const q = S.q.trim().toLowerCase();
+    const matches = (r) => (!q || r.displayName.toLowerCase().includes(q) || r.email.includes(q))
+      && (!S.fLesson || r.node === S.fLesson)
+      && (!S.fStatus || (S.fStatus === 'notsigned' ? !r.signed : S.fStatus === 'revoked' ? !r.active : S.fStatus === 'complete' ? (r.node === 'FINISH' || r.status === 'complete') : r.status === S.fStatus));
+    const shown = inP.filter(matches);
+    const src = (r) => this.m.avatarSrc(r.avatar);
+    const stopShort = (n) => cfg.short_labels[n] || n;
+    const plab = allP ? 'all periods' : `Period ${S.period}`;
+    const setF = (st) => this.setState({ fStatus: st, fLesson: '', view: 'roster' });
+
+    const cnt = (f) => inP.filter(f).length;
+    const pendingEnroll = D.enroll.filter((e) => e.status === 'pending');
+    const stats = [
+      { label: 'On roster', value: inP.length, st: '' },
+      { label: 'Signed in', value: cnt((r) => r.signed && r.active), st: '' },
+      { label: 'Requesting approval', value: cnt((r) => r.status === 'ready'), st: 'ready' },
+      { label: 'Awaiting feedback', value: cnt((r) => r.status === 'submitted'), st: 'submitted' },
+      { label: 'Needs support', value: cnt((r) => r.status === 'needs'), st: 'needs' },
+      { label: 'Completed unit', value: cnt((r) => r.node === 'FINISH' || r.status === 'complete'), st: 'complete' },
+      { label: 'Enrollment requests', value: pendingEnroll.length, st: null }
+    ].map((s) => ({ ...s, aria: `${s.value} ${s.label}${s.st !== null ? ' — show in roster' : ''}`, bg: S.fStatus === s.st && s.st ? 'var(--color-accent-100)' : 'var(--color-neutral-100)', border: S.fStatus === s.st && s.st ? 'var(--color-accent-700)' : 'var(--color-text)', onClick: () => s.st === null ? null : setF(s.st) }));
+
+    const rows = shown.map((r) => {
+      const st = !r.active ? 'revoked' : r.signed ? r.status : 'none';
+      const [bg, fg] = TONE[st];
+      const lessons = r.done.filter((n) => n.startsWith('L')).length, mcs = r.done.filter((n) => n.startsWith('MC')).length;
+      return { email: r.email, name: r.displayName, period: r.period, avatarSrc: src(r), avatarOpacity: r.active ? 1 : 0.4,
+        nodeLabel: r.signed ? r.node : '—', nodeShort: r.signed ? stopShort(r.node) : 'Not signed in yet',
+        statusLabel: !r.active ? 'Access revoked' : r.signed ? TS[r.status] : 'Not signed in', statusBg: bg, statusColor: fg,
+        lessonsText: r.signed ? `${lessons}/7 lessons` : '—', mcText: r.signed ? `${mcs}/3 checks` : '',
+        rowBg: r.status === 'ready' ? 'var(--color-accent-100)' : 'transparent', notSigned: !r.signed || !r.active,
+        verifyDisabled: !r.signed || !r.active || r.node === 'FINISH', verifyAria: `Verify ${r.displayName} at ${r.node || ''} and advance`,
+        aria: `${r.displayName}: open details`, onOpen: () => this.openDrawer(r.email), onVerify: () => this.verify(r), onPractice: () => this.openDrawer(r.email, true) };
+    });
+
+    const mapCols = STOPS.map((n, i) => {
+      const people = shown.filter((r) => r.signed && r.active && r.node === n);
+      const isGate = n.startsWith('MC'), w2 = i >= 5;
+      return { label: n === 'FINISH' ? 'FINISH' : n, short: n === 'FINISH' ? 'Unit complete' : isGate ? cfg.mastery_checks.find((m) => m.id === n).title : stopShort(n), count: people.length,
+        src: n === 'FINISH' ? 'assets/fx_1.png' : isGate ? cfg.assets.gate[n].closed : w2 ? 'assets/plat_4.png' : 'assets/plat_1.png',
+        bg: isGate ? 'var(--color-accent-2-100)' : 'var(--color-bg)', border: i === 5 ? 'var(--color-accent-700)' : 'var(--color-neutral-300)',
+        people: people.map((r) => ({ name: r.displayName, src: src(r), dot: DOT[r.status], border: r.status === 'ready' ? 'var(--color-accent-700)' : 'var(--color-neutral-300)', aria: `${r.displayName}, ${TS[r.status]}. Open details.`, onOpen: () => this.openDrawer(r.email) })) };
+    });
+
+    const when = (t) => { const dt = new Date(t), s = (Date.now() - t) / 1000; return s < 60 ? 'just now' : s < 3600 ? `${Math.round(s / 60)} min ago` : dt.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); };
+    const undone = (e) => D.audit.some((x) => x.revertOf === e.id);
+    const undoable = (e) => (e.before || e.periodBefore) && !undone(e) && !e.revertOf;
+    const askUndo = (e) => this.ask({ title: `Undo change #${e.n}?`, body: `This adds a new correction to the history. The original entry stays.`, hasChange: true,
+      from: e.after ? `${e.after.node} · ${TS[e.after.status]}` : `Period ${e.periodAfter}`, to: e.before ? `${e.before.node} · ${TS[e.before.status]}` : `Period ${e.periodBefore}`,
+      reasonLabel: 'Reason (required)', reasonPh: 'e.g. Advanced the wrong student', label: 'Undo with correction', needsReason: true,
+      run: (reason) => this.run('revertAudit', { id: e.id, reason }, `Change #${e.n} undone — correction logged.`) });
+    const fmtChange = (e) => e.change || (e.before && e.after ? `${e.before.node} · ${TS[e.before.status]} → ${e.after.node} · ${TS[e.after.status]}` : '');
+    const histRow = (e) => ({ n: e.n, when: when(e.at), actor: e.actorName || e.actor, target: e.targetName || e.email || '—', action: e.action, change: fmtChange(e), reason: e.reason ? `“${e.reason}”` : '', canUndo: !!undoable(e), undone: undone(e), onUndo: () => askUndo(e) });
+    const periodOf = (e) => { const r = all.find((x) => x.email === e.email || (e.target && x.uid === e.target)); return r ? r.period : null; };
+    const history = D.audit.filter((e) => allP || periodOf(e) === S.period || periodOf(e) === null).slice(0, 150).map(histRow);
+
+    const enroll = pendingEnroll.map((e) => {
+      const dr = S.drafts[e.email] || { name: this.shortName(e.googleName), period: String(allP ? 2 : S.period) };
+      const setDr = (patch) => this.setState({ drafts: { ...S.drafts, [e.email]: { ...dr, ...patch } } });
+      return { email: e.email, googleName: e.googleName, when: when(e.at), name: dr.name, period: dr.period, onName: (ev) => setDr({ name: ev.target.value }), onPeriod: (ev) => setDr({ period: ev.target.value }),
+        onApprove: () => this.ask({ title: `Approve ${e.googleName}?`, body: `They’ll be able to sign in as “${dr.name}” and appear on the Period ${dr.period} board at L1.`, hasChange: false, reasonLabel: 'Note (optional)', reasonPh: '', label: 'Approve', needsReason: false,
+          run: () => this.run('approveEnrollment', { email: e.email, period: Number(dr.period), displayName: dr.name }, `${dr.name} approved for Period ${dr.period}.`) }),
+        onDeny: () => this.ask({ title: `Deny ${e.googleName}?`, body: 'They’ll see “request denied” and can’t enter the map. You can still add them later from + Add student.', hasChange: false, reasonLabel: 'Note (optional)', reasonPh: '', label: 'Deny request', needsReason: false,
+          run: () => this.run('denyEnrollment', { email: e.email }, `${e.googleName}'s request denied.`) }) };
+    });
+
+    const qItem = (r, canVerify) => ({ name: r.displayName, where: `${r.node} · ${allP ? 'P' + r.period + ' · ' : ''}${stopShort(r.node)}`, src: src(r), aria: `${r.displayName}: open details`, canVerify, verifyAria: `Verify ${r.displayName} at ${r.node}`, onOpen: () => this.openDrawer(r.email), onVerify: () => this.verify(r) });
+    const act = inP.filter((r) => r.signed && r.active);
+    const queues = [
+      { title: 'Requesting approval', dot: DOT.ready, hint: 'Ready for a mastery check or lesson sign-off.', items: act.filter((r) => r.status === 'ready').map((r) => qItem(r, true)) },
+      { title: 'Awaiting feedback', dot: DOT.submitted, hint: 'Work submitted — needs your review.', items: act.filter((r) => r.status === 'submitted').map((r) => qItem(r, true)) },
+      { title: 'Needs support', dot: DOT.needs, hint: 'Doing targeted practice or reassessment.', items: act.filter((r) => r.status === 'needs').map((r) => qItem(r, false)) },
+      { title: 'Completed the unit', dot: DOT.complete, hint: '', items: act.filter((r) => r.node === 'FINISH' || r.status === 'complete').map((r) => qItem(r, false)) }
+    ].map((x) => ({ ...x, count: x.items.length, empty: x.items.length === 0 }));
+
+    // Drawer
+    const dr = S.drawer ? all.find((r) => r.email === S.drawer) : null;
+    let d = {};
+    if (dr) {
+      const [sbg, sfg] = TONE[!dr.active ? 'revoked' : dr.signed ? dr.status : 'none'];
+      const first = dr.displayName.split(' ')[0];
+      d = { name: dr.displayName, email: dr.email, first, avatarSrc: src(dr), period: String(dr.period), signed: dr.signed && dr.active, notSigned: !dr.signed,
+        accessText: dr.active ? 'Active' : 'Revoked — can’t sign in', accessBtn: dr.active ? 'Revoke access…' : 'Grant access…',
+        nodeText: dr.signed ? `${dr.node} · ${this.title(dr.node)}` : '—', statusLabel: !dr.active ? 'Access revoked' : dr.signed ? TS[dr.status] : 'Not signed in', statusBg: sbg, statusColor: sfg,
+        route: STOPS.map((n) => { const isDone = dr.done.includes(n), cur = n === dr.node; return { label: n === 'FINISH' ? '★' : n, title: this.title(n), bg: cur ? 'var(--color-accent-700)' : isDone ? 'var(--color-accent-2-300)' : 'var(--color-neutral-100)', color: cur ? 'var(--color-neutral-100)' : 'var(--color-text)', border: n.startsWith('MC') ? 'var(--color-accent-2-700)' : 'var(--color-neutral-300)' }; }),
+        routeText: dr.signed ? `Completed: ${dr.done.length ? dr.done.join(', ') : 'none yet'}` : '',
+        mcs: cfg.mastery_checks.map((m) => { const mi = STOPS.indexOf(m.id); const state = dr.idx > mi || dr.done.includes(m.id) ? 'Verified' : dr.node === m.id ? TS[dr.status] : 'Not yet'; const t = state === 'Verified' ? TONE.mastered : dr.node === m.id ? TONE[dr.status] : TONE.none; return { id: m.id, title: m.title, state, bg: t[0], color: t[1], src: cfg.assets.gate[m.id][state === 'Verified' ? 'open' : 'closed'] }; }),
+        next: this.nextStep(dr.node, dr.status),
+        verifyLabel: dr.node && dr.node !== 'FINISH' ? `✓ Verify ${dr.node} → advance to ${nextStop(dr.node)}` : 'Unit complete', verifyDisabled: !dr.node || dr.node === 'FINISH',
+        onVerify: () => this.verify(dr),
+        onPractice: () => { const t = S.composer.trim(); if (!t) return this.toast('Write the next-step instructions in the message box first.', true);
+          this.ask({ title: `Request more practice from ${first}?`, body: 'They stay at this stop. Your message appears privately on their board. Classmates only see their location.', hasChange: true, from: `${dr.node} · ${TS[dr.status]}`, to: `${dr.node} · Needs support`, reasonLabel: 'Message being sent', reasonPh: '', label: 'Send & mark needs practice', needsReason: false,
+            run: async () => { const ok = await this.run('requestPractice', { uid: dr.uid, text: t }, `Practice requested — ${first} will see your instructions.`); if (ok) this.setState({ composer: '' }); return ok; } });
+          setTimeout(() => this.setState((s) => ({ confirm: s.confirm ? { ...s.confirm, reason: t } : null })), 0); },
+        onFeedback: async () => { const t = S.composer.trim(); if (!t) return this.toast('Write a message first.', true); if (await this.run('sendFeedback', { uid: dr.uid, text: t }, `Private feedback sent to ${first}.`)) this.setState({ composer: '' }); },
+        onCorrect: () => { const c = S.corr; if (c.node === dr.node && c.status === dr.status) return this.toast('That’s already their current position.', true);
+          this.ask({ title: `Correct ${first}'s position?`, body: `Use this to fix a mistaken entry. Their avatar moves on the Period ${dr.period} board.`, hasChange: true, from: `${dr.node} · ${TS[dr.status]}`, to: `${c.node} · ${TS[c.status]}`, reasonLabel: 'Reason (required)', reasonPh: 'e.g. Clicked the wrong student yesterday', label: 'Save correction', needsReason: true,
+            run: (reason) => this.run('setProgress', { uid: dr.uid, node: c.node, status: c.status, action: 'Manual correction', reason }, `${first}'s position corrected.`) }); },
+        onPeriod: (e) => { const p = Number(e.target.value); if (p === dr.period) return;
+          this.ask({ title: `Move ${first} to Period ${p}?`, body: `Their avatar will leave the Period ${dr.period} board and appear on Period ${p}. Progress is kept.`, hasChange: true, from: `Period ${dr.period}`, to: `Period ${p}`, reasonLabel: 'Reason (required)', reasonPh: 'e.g. Schedule change', label: 'Change period', needsReason: true,
+            run: () => this.run('changePeriod', { email: dr.email, period: p }, `${first} moved to Period ${p}.`) }); },
+        onAccess: () => this.ask({ title: dr.active ? `Revoke ${first}'s access?` : `Restore ${first}'s access?`, body: dr.active ? 'They won’t be able to sign in, and their avatar is hidden from the board. Progress and history are kept.' : 'They can sign in again and reappear on the board where they left off.', hasChange: false, reasonLabel: 'Reason (required)', reasonPh: '', label: dr.active ? 'Revoke access' : 'Restore access', needsReason: true,
+          run: () => this.run('setAccess', { email: dr.email, active: !dr.active }, dr.active ? `${first}'s access revoked.` : `${first}'s access restored.`) }),
+        onRemove: () => this.ask({ title: `Remove ${first} from Period ${dr.period}?`, body: 'They’re taken off the roster and the board. Their progress and change history are kept, so you can re-add them later.', hasChange: false, reasonLabel: 'Reason (required)', reasonPh: 'e.g. Dropped the course', label: 'Remove from class', needsReason: true,
+          run: async () => { const ok = await this.run('removeStudent', { email: dr.email }, `${first} removed from the roster.`); if (ok) this.closeDrawer(); return ok; } }),
+        feedback: S.fb.map((f) => ({ meta: `${f.kind === 'practice' ? 'Practice request' : 'Feedback'} · ${f.author} · ${when(f.at)}`, text: f.text })), feedbackEmpty: S.fb.length === 0,
+        history: D.audit.filter((e) => e.email === dr.email || (dr.uid && e.target === dr.uid)).map(histRow), historyEmpty: !D.audit.some((e) => e.email === dr.email || (dr.uid && e.target === dr.uid)) };
+    }
+
+    // Walkthrough + security bench (demo only)
+    const J = `demo09@${DD}`, riley = all.find((r) => r.email === `demo02@${DD}`);
+    const attempt = (key, asId, op, args) => { const r = b.demoAttempt(asId, op, args); this.setState({ sec: { ...this.state.sec, [key]: r } }); return r; };
+    const secDefs = [
+      ['self-master', 'Mark their own L1 work as mastered', 'Quinn D. (student)', 'demo01', 'setProgress', { uid: 'demo01', node: 'L2', status: 'mastered', action: 'self', reason: '' }],
+      ['other-avatar', 'Change another student’s avatar (act as Riley)', 'Quinn D. (student)', 'demo01', 'setAvatar', { uid: 'demo02', avatar: 'avB_1' }],
+      ['claim-staff', 'Give themselves a teacher role', 'Quinn D. (student)', 'demo01', 'writeStaff', {}],
+      ['self-approve', 'Approve their own enrollment', 'Jamie Rivera (pending)', 'demo09', 'approveEnrollment', { email: J, period: 2, displayName: 'Jamie R.' }],
+      ['own-period', 'Move themselves to Period 5', 'Quinn D. (student)', 'demo01', 'changePeriod', { email: `demo01@${DD}`, period: 5 }],
+      ['read-private', 'Read Casey’s private progress', 'Quinn D. (student)', 'demo01', 'readProgress', { uid: 'demo04' }],
+      ['erase-history', 'Delete an entry from the change history', 'Quinn D. (student)', 'demo01', 'editAudit', {}],
+      ['outsider', 'Request access with a personal Gmail', 'Personal account', 'outsider', 'requestEnrollment', { email: 'gamer123@personal.example' }],
+      ['staff-grant', 'Grant a student the staff role', 'Co-teacher (staff)', 'staff2', 'writeStaff', {}]
+    ];
+    const secTests = demo ? secDefs.map(([key, title, who, asId, op, args]) => { const r = S.sec[key]; return { title, who,
+      result: r ? (r.ok ? 'ALLOWED ✗ — this should have been blocked' : `Denied ✓ — ${r.message.replace(/^Permission denied: /, '')}`) : '', resultColor: r && r.ok ? 'var(--color-accent-800)' : 'var(--color-accent-2-800)',
+      border: !r ? 'var(--color-neutral-300)' : r.ok ? 'var(--color-accent-800)' : 'var(--color-accent-2-600)', onRun: () => attempt(key, asId, op, args) }; }) : [];
+    const doneS = { 1: S.period === 2, 2: !!D.enroll.find((e) => e.email === J) || !!D.roster.find((r) => r.email === J), 3: !!D.roster.find((r) => r.email === J), 4: !!D.users.demo09, 5: D.audit.some((e) => e.target === 'demo02' && e.after), 6: D.audit.some((e) => e.target === 'demo02' && e.after) && S.boardAs === 'demo02', 7: !!S.walkRes[7] };
+    const W = [
+      [1, 'Mr. Wallace signs in and views Period 2', 'You’re signed in as staff. This switches the dashboard to Period 2.', 'View Period 2', () => this.setState({ period: 2 }), 'works', 'needs Google sign-in + a staff record for Mr. Wallace'],
+      [2, 'A new student requests enrollment', 'Simulates Jamie Rivera signing in with a school account that isn’t on any roster. Their request lands in “Enrollment requests” →', 'Simulate Jamie’s sign-in', () => { b.demoSimulateSignIn('demo09'); this.toast('Jamie Rivera’s request arrived in Enrollment requests.'); }, 'works', 'enrollRequests rule written; emulator test written, not run'],
+      [3, 'Approve Jamie and assign Period 2', 'Use Approve on Jamie’s card (right), or this button.', 'Approve for Period 2', () => { if (D.roster.find((r) => r.email === J)) return this.toast('Jamie is already approved.'); this.ask({ title: 'Approve Jamie Rivera?', body: 'They’ll appear on the Period 2 board as “Jamie R.” after signing in.', hasChange: false, reasonLabel: 'Note (optional)', reasonPh: '', label: 'Approve', needsReason: false, run: () => this.run('approveEnrollment', { email: J, period: 2, displayName: 'Jamie R.' }, 'Jamie R. approved for Period 2.') }); }, 'works', 'roster rules written; not deployed or tested'],
+      [4, 'Jamie appears on the Period 2 board', 'Simulates Jamie signing in again. Their profile starts at L1. Watch the board preview (Week 1, as Quinn).', 'Simulate Jamie’s next sign-in', () => { const st = b.demoSimulateSignIn('demo09'); this.setState({ boardAs: 'demo01', boardView: 'week1' }); this.toast(st.status === 'student' ? 'Jamie R. is now on the Period 2 board at L1.' : 'Approve Jamie first (step 3).', st.status !== 'student'); }, 'works', 'first-sign-in batch + live updates need Firebase'],
+      [5, 'Update Riley F.’s verified progress', `Riley is at ${riley && riley.node ? riley.node : '—'}, requesting approval. Verify moves them forward and writes a history entry.`, 'Verify Riley…', () => riley && riley.signed ? this.verify(riley) : this.toast('Riley isn’t signed in.', true), 'works', 'audited() rule enforces the history entry; test written, not run'],
+      [6, 'Riley’s avatar moves on the board', 'Switches the preview to Riley’s own view of Week 1, where the YOU marker sits at the new checkpoint.', 'Show Riley’s board', () => this.setState({ boardAs: 'demo02', boardView: 'week1' }), 'works', 'live onSnapshot updates need Firebase'],
+      [7, 'A student tries an unauthorized action', 'Quinn tries to mark himself as mastered. More attacks are under “Security tests”.', 'Try it as Quinn', () => { const r = attempt('self-master', 'demo01', 'setProgress', { uid: 'demo01', node: 'L2', status: 'mastered', action: 'self', reason: '' }); this.setState({ walkRes: { ...this.state.walkRes, 7: r } }); }, 'blocked by the simulated rules', 'real denial needs the emulator suite run + rules deployed']
+    ];
+    const walk = demo ? W.map(([num, title, desc, actionLabel, onAction, dm, pr]) => { const r = num === 7 ? S.walkRes[7] : null; return { num, title, desc, actionLabel, onAction, demo: dm, prod: pr,
+      border: doneS[num] ? 'var(--color-accent-2-600)' : 'var(--color-neutral-300)', numBg: doneS[num] ? 'var(--color-accent-2-700)' : 'var(--color-neutral-600)',
+      result: r ? (r.ok ? 'ALLOWED ✗ — unexpected' : `Denied ✓ — ${r.message.replace(/^Permission denied: /, '')}`) : '', resultBg: r && r.ok ? 'var(--color-accent-200)' : 'var(--color-accent-2-100)' }; }) : [];
+    const boardAsOpts = all.filter((r) => r.signed && r.active).map((r) => ({ id: (r.uid || ''), label: `${r.displayName} · P${r.period}` }));
+
+    const tabsDef = [['roster', 'Roster'], ['map', 'Map view'], ['history', 'Change history']].concat(demo ? [['walk', 'Demo walkthrough'], ['sec', 'Security tests']] : []);
+    return {
+      ...base, meName: a.name, domainWarn: !S.domainVerified,
+      periods: [['all', 'All'], [1, '1'], [2, '2'], [5, '5'], [7, '7']].map(([v, l]) => ({ label: l, pressed: String(S.period === v), bg: S.period === v ? 'var(--color-accent-500)' : 'transparent', color: 'var(--color-neutral-100)', onClick: () => this.setState({ period: v }) })),
+      stats, tabs: tabsDef.map(([v, l]) => ({ label: l, pressed: String(S.view === v), bg: S.view === v ? 'var(--color-text)' : 'var(--color-bg)', color: S.view === v ? 'var(--color-neutral-100)' : 'var(--color-text)', onClick: () => this.setState({ view: v }) })),
+      isRoster: S.view === 'roster', isMap: S.view === 'map', isHistory: S.view === 'history', isWalk: S.view === 'walk', isSec: S.view === 'sec', showFilters: S.view === 'roster' || S.view === 'map',
+      q: S.q, onSearch: (e) => this.setState({ q: e.target.value }), fLesson: S.fLesson, onLesson: (e) => this.setState({ fLesson: e.target.value }), fStatus: S.fStatus, onStatus: (e) => this.setState({ fStatus: e.target.value }),
+      lessonOpts: [{ id: '', label: 'All stops' }].concat(STOPS.map((n) => ({ id: n, label: `${n} · ${stopShort(n)}` }))),
+      statusOpts: [{ id: '', label: 'All statuses' }].concat(Object.entries(TS).map(([id, label]) => ({ id, label }))).concat([{ id: 'notsigned', label: 'Not signed in yet' }, { id: 'revoked', label: 'Access revoked' }]),
+      hasFilters: !!(S.q || S.fLesson || S.fStatus), clearFilters: () => this.setState({ q: '', fLesson: '', fStatus: '' }),
+      resultText: `${shown.length} of ${inP.length} students · ${plab}`,
+      addOpen: S.addOpen, toggleAdd: () => this.setState({ addOpen: !S.addOpen }), add: S.add,
+      onAddEmail: (e) => this.setState({ add: { ...S.add, email: e.target.value } }), onAddName: (e) => this.setState({ add: { ...S.add, name: e.target.value } }), onAddPeriod: (e) => this.setState({ add: { ...S.add, period: e.target.value } }),
+      submitAdd: async (e) => { e.preventDefault(); const A = S.add; if (await this.run('addStudent', { email: A.email, displayName: A.name, period: Number(A.period) }, `${A.name} added to Period ${A.period}.`)) this.setState({ add: { email: '', name: '', period: A.period }, addOpen: false }); },
+      rows, rowsEmpty: rows.length === 0, mapCols,
+      legend: Object.entries(DOT).map(([k, dot]) => ({ dot, label: TS[k] })),
+      history, historyEmpty: history.length === 0,
+      enroll, enrollEmpty: enroll.length === 0, queues,
+      drawerOpen: !!dr, d, closeDrawer: () => this.closeDrawer(),
+      composer: S.composer, onComposer: (e) => this.setState({ composer: e.target.value }),
+      corr: S.corr, onCorrNode: (e) => this.setState({ corr: { ...S.corr, node: e.target.value } }), onCorrStatus: (e) => this.setState({ corr: { ...S.corr, status: e.target.value } }),
+      stopOpts: STOPS.map((n) => ({ id: n, label: `${n} · ${stopShort(n)}` })), statusSetOpts: Object.entries(TS).map(([id, label]) => ({ id, label })),
+      walk, secTests, runAllSec: () => secDefs.forEach(([key, , , asId, op, args]) => attempt(key, asId, op, args)),
+      boardAs: S.boardAs, boardView: S.boardView, boardAsOpts, onBoardAs: (e) => this.setState({ boardAs: e.target.value }), onBoardView: (e) => this.setState({ boardView: e.target.value }),
+      boardSrc: `Road to Disunion Tracker.dc.html#demo-as=${S.boardAs}&view=${S.boardView}`,
+      askReset: () => this.ask({ title: 'Reset all demo data?', body: 'Restores the fictional roster, positions and history to their starting state in this browser.', hasChange: false, reasonLabel: 'Type RESET to confirm', reasonPh: 'RESET', label: 'Reset demo data', needsReason: true,
+        run: (r) => { if (r !== 'RESET') { this.setState({ confirm: { ...this.state.confirm, err: 'Type RESET to confirm.' } }); return false; } b.demoReset(); this.setState({ sec: {}, walkRes: {}, drawer: null }); this.toast('Demo data reset.'); } })
+    };
+  }
+  shortName(n) { const p = (n || '').trim().split(/\s+/); return p.length > 1 ? `${p[0]} ${p[p.length - 1][0]}.` : p[0] || ''; }
+}
+</script>
+</body>
+</html>

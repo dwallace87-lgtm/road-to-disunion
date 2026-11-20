@@ -1,0 +1,133 @@
+rules_version = '2';
+// Road to Disunion — Firestore security rules (the real permission system).
+// Every check here runs on Google's servers; hiding buttons in the app is NOT what keeps data safe.
+// Status: written, NOT yet deployed, NOT yet run against the emulator test suite (tests/firestore.rules.test.js).
+//
+// Collections
+//   staff/{email}               teacher/co-teacher allowlist — admin-managed in the Firebase console ONLY
+//   roster/{email}              approved students { period, displayName, active }
+//   enrollRequests/{email}      pending accounts { email, googleName, status, createdAt, reviewedBy? }
+//   users/{uid}                 profile { email, period, displayName, avatar, role:'student', createdAt }
+//   positions/{uid}             class-visible location only { period, displayName, avatar, node }
+//   progress/{uid}              PRIVATE { period, node, status, lastAuditId }
+//   progress/{uid}/feedback     PRIVATE teacher messages
+//   audit/{id}                  append-only history of staff changes
+//   resources/{node}            lesson resource links
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ⚠ UNVERIFIED CONFIGURATION — replace with the school's confirmed Google Workspace domain(s).
+    // Keep in sync with allowedDomains in firebase-config.js. Tests substitute a test domain here.
+    function schoolDomains() { return ['UNVERIFIED-DOMAIN.invalid']; }
+
+    function signedIn()      { return request.auth != null && request.auth.token.email_verified == true; }
+    function email()         { return request.auth.token.email.lower(); }
+    function schoolEmail()   { return signedIn() && email().split('@')[1] in schoolDomains(); }
+    function path(p)         { return /databases/$(database)/documents/$(p); }
+    function isStaff()       { return schoolEmail() && exists(/databases/$(database)/documents/staff/$(email())); }
+    function onRoster()      { return exists(/databases/$(database)/documents/roster/$(email())); }
+    function rosterEntry()   { return get(/databases/$(database)/documents/roster/$(email())).data; }
+    function isStudent()     { return schoolEmail() && onRoster() && rosterEntry().active == true; }
+    function myPeriod()      { return rosterEntry().period; }
+    function validPeriod(p)  { return p in [1, 2, 5, 7]; }
+    function validNode(n)    { return n in ['L1','L2','MC1','L3','MC2','L4','L5','MC3','L6','L7','FINISH']; }
+    function validStatus(s)  { return s in ['current','practice','ready','submitted','mastered','needs','complete']; }
+    function validAvatar(a)  { return a == null || (a is string && a.matches('^av[AB]_([1-9]|1[0-2])$')); }
+    function validName(n)    { return n is string && n.size() > 0 && n.size() <= 40; }
+    function newData()       { return request.resource.data; }
+    function onlyChanges(ks) { return newData().diff(resource.data).affectedKeys().hasOnly(ks); }
+
+    // A staff progress write must reference a NEW audit entry, written in the same batch, about this
+    // student, by this staff member. This guarantees every progress change is in the history.
+    function audited(uid) {
+      let id = newData().lastAuditId;
+      return id is string
+        && (resource == null || id != resource.data.get('lastAuditId', ''))
+        && existsAfter(path('audit/' + id))
+        && getAfter(path('audit/' + id)).data.target == uid
+        && getAfter(path('audit/' + id)).data.actor == email();
+    }
+
+    match /staff/{e} {
+      allow read: if isStaff() || (schoolEmail() && e == email());
+      allow write: if false; // no one — not even staff — can grant roles from the app
+    }
+
+    match /roster/{e} {
+      allow read: if isStaff() || (schoolEmail() && e == email());
+      allow create, update: if isStaff()
+        && newData().keys().hasOnly(['period','displayName','active'])
+        && validPeriod(newData().period) && validName(newData().displayName) && newData().active is bool
+        && !exists(path('staff/' + e));
+      allow delete: if isStaff();
+    }
+
+    match /enrollRequests/{e} {
+      allow read: if isStaff() || (schoolEmail() && e == email());
+      // An unrecognised school account may ask to join — only for itself, only as 'pending'.
+      allow create: if schoolEmail() && e == email() && !isStaff() && !onRoster()
+        && newData().keys().hasOnly(['email','googleName','status','createdAt'])
+        && newData().email == e && newData().status == 'pending' && newData().createdAt == request.time;
+      allow update: if isStaff() && onlyChanges(['status','reviewedBy'])
+        && newData().status in ['approved','denied'] && newData().reviewedBy == email();
+      allow delete: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth.uid == uid || isStaff();
+      allow create: if request.auth.uid == uid && isStudent()
+        && newData().keys().hasOnly(['email','period','displayName','avatar','role','createdAt'])
+        && newData().email == email() && newData().period == myPeriod()
+        && newData().displayName == rosterEntry().displayName
+        && newData().role == 'student' && validAvatar(newData().avatar);
+      allow update: if (request.auth.uid == uid && isStudent() && onlyChanges(['avatar']) && validAvatar(newData().avatar))
+                    || (isStaff() && onlyChanges(['period','displayName']) && validPeriod(newData().period));
+      allow delete: if isStaff();
+    }
+
+    match /positions/{uid} {
+      allow read: if isStaff() || (isStudent() && resource.data.period == myPeriod());
+      allow create: if (request.auth.uid == uid && isStudent()
+                        && newData().keys().hasOnly(['period','displayName','avatar','node'])
+                        && newData().period == myPeriod() && newData().displayName == rosterEntry().displayName
+                        && newData().node == 'L1' && validAvatar(newData().avatar))
+                    || (isStaff() && validPeriod(newData().period) && validNode(newData().node) && validAvatar(newData().avatar));
+      allow update: if (request.auth.uid == uid && isStudent() && onlyChanges(['avatar']) && validAvatar(newData().avatar))
+                    || (isStaff() && onlyChanges(['node','period','displayName']) && validNode(newData().node) && validPeriod(newData().period));
+      allow delete: if isStaff();
+    }
+
+    match /progress/{uid} {
+      allow read: if request.auth.uid == uid || isStaff();
+      // Students may only create their own starting record (L1, current) and can NEVER edit it.
+      allow create: if (request.auth.uid == uid && isStudent()
+                        && newData().keys().hasOnly(['period','node','status'])
+                        && newData().period == myPeriod() && newData().node == 'L1' && newData().status == 'current')
+                    || (isStaff() && validNode(newData().node) && validStatus(newData().status) && audited(uid));
+      allow update: if isStaff() && validNode(newData().node) && validStatus(newData().status)
+                    && validPeriod(newData().period) && audited(uid);
+      allow delete: if false;
+
+      match /feedback/{fid} {
+        allow read: if request.auth.uid == uid || isStaff();
+        allow create: if isStaff() && newData().author == email() && newData().at == request.time
+          && newData().kind in ['note','practice'] && newData().text is string && newData().text.size() <= 2000;
+        allow update, delete: if false;
+      }
+    }
+
+    match /audit/{aid} {
+      allow read: if isStaff();
+      allow create: if isStaff() && newData().actor == email() && newData().at == request.time && newData().action is string;
+      allow update, delete: if false; // append-only
+    }
+
+    match /resources/{node} {
+      allow read: if isStaff() || isStudent();
+      allow write: if isStaff() && validNode(node);
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}
