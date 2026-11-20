@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "check:assets": "node scripts/check-assets.mjs",
-    "test:rules": "firebase emulators:exec --only firestore \"node --test tests/\""
+    "test:rules": "firebase emulators:exec --project demo-rtd-rules-test --only firestore \"node --test tests/firestore.rules.test.js\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^3.0.4",
