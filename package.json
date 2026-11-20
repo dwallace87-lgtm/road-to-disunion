@@ -2,6 +2,7 @@
   "name": "road-to-disunion-tracker",
   "private": true,
   "scripts": {
+    "check:assets": "node scripts/check-assets.mjs",
     "test:rules": "firebase emulators:exec --only firestore \"node --test tests/\""
   },
   "devDependencies": {
