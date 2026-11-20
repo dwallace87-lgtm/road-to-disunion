@@ -3,11 +3,10 @@
 **Status:** DEMO MODE. Accounts are fictional and progress is saved only in each visitor's browser. Do not enter real student information.
 
 ## Put it on GitHub Pages (no coding)
-1. Create a new repository on github.com (for example, `road-to-disunion`).
-2. Click **Add file → Upload files**. Drag in **everything inside this folder**, including the `assets`, `_ds`, `tests` and `docs` folders and the `.nojekyll` file. Then click **Commit changes**.
-   - Hidden files like `.nojekyll` may not show on your computer. On a Mac, press Cmd+Shift+. in Finder. On Windows, turn on View → Hidden items.
-3. Go to **Settings → Pages**. Under "Branch", choose **main** and **/ (root)**, then click **Save**.
-4. After about a minute, your site address appears at the top of that page, for example `https://yourname.github.io/road-to-disunion/`.
+1. In the GitHub repository, click **Settings → Pages**.
+2. Under **Build and deployment**, open **Source** and select **GitHub Actions**.
+3. A push to `main` publishes the demo. To start the first deployment by hand, open **Actions → Publish demo to GitHub Pages → Run workflow**, select **main**, and click **Run workflow**.
+4. Once deployment finishes, go back to **Settings → Pages** and click **Visit site**. The default address is `https://OWNER.github.io/REPOSITORY/`.
 
 ## Put it on Google Sites
 - **Student board:** Insert → Embed → **By URL** → paste your site address → stretch the box to full width.
@@ -24,7 +23,7 @@
 - `assets/`: all the pixel art.
 - `_ds/`: fonts and colors.
 - `firestore.rules` and `firebase.json`: real security rules and hosting settings, used once Firebase is set up.
-- `tests/` and `package.json`: automated security tests. They have not been run yet.
+- `tests/` and `package.json`: automated security tests that run on pull requests and on pushes to `main`.
 - `docs/`: the plan and a plain-English guide to Mission Control.
 
 ## Before real students use it
